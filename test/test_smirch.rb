@@ -2,7 +2,7 @@ require 'helper'
 
 class TestSmirch < Test::Unit::TestCase
   def stub_text(name = 'text widget')
-    stub(name, :layout_data= => nil, :background= => nil, :foreground= => nil)
+    stub(name, :layout_data= => nil, :background= => nil, :foreground= => nil, :add_key_listener => nil)
   end
 
   def setup
@@ -45,6 +45,7 @@ class TestSmirch < Test::Unit::TestCase
     input_box = stub_text('input box')
     Smirch::Text.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(input_box)
     input_box.expects(:layout_data=).with(@grid_data)
+    input_box.expects(:add_key_listener)
 
     s = Smirch.new
     s.main_loop

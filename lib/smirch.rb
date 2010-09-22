@@ -5,6 +5,7 @@ class Smirch
   import "org.eclipse.swt.SWT"
   import "org.eclipse.swt.layout.GridLayout"
   import "org.eclipse.swt.layout.GridData"
+  import "org.eclipse.swt.events.KeyAdapter"
   include_package "org.eclipse.swt.widgets"
 
   def initialize
@@ -24,6 +25,16 @@ class Smirch
     grid_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
     grid_data.heightHint = 25
     @input_box.layout_data = grid_data
+    @input_box.add_key_listener(Class.new {
+      def initialize(parent)
+        @parent = parent
+      end
+      def keyPressed(event)
+        @parent.handle_input if event.character == SWT::CR
+      end
+      def keyReleased(event)
+      end
+    }.new(self))
   end
 
   def main_loop
@@ -32,5 +43,10 @@ class Smirch
       @display.sleep   if !@display.read_and_dispatch
     end
     @display.dispose
+  end
+
+  def handle_input
+    puts @input_box.text
+    @input_box.text = ""
   end
 end
