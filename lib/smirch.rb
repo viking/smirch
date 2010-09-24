@@ -1,4 +1,5 @@
 require 'java'
+require 'socket'
 require File.dirname(__FILE__) + "/swt.jar"
 
 class Smirch
@@ -6,6 +7,7 @@ class Smirch
   import "org.eclipse.swt.layout.GridLayout"
   import "org.eclipse.swt.layout.GridData"
   import "org.eclipse.swt.events.KeyListener"
+  import "org.eclipse.swt.graphics.Font"
   include_package "org.eclipse.swt.widgets"
 
   class PollRunner
@@ -48,10 +50,11 @@ class Smirch
 
     black = @display.system_color(SWT::COLOR_BLACK)
     white = @display.system_color(SWT::COLOR_WHITE)
-    @chat_box = Text.new(@shell, SWT::BORDER | SWT::MULTI | SWT::READ_ONLY)
+    @chat_box = Text.new(@shell, SWT::BORDER | SWT::MULTI | SWT::V_SCROLL | SWT::READ_ONLY)
     @chat_box.layout_data = GridData.new(GridData::FILL, GridData::FILL, true, true)
     @chat_box.background = black
     @chat_box.foreground = white
+    @chat_box.font = Font.new(@display, "DejaVu Sans Mono", 18, 0)
 
     @input_box = Text.new(@shell, SWT::BORDER)
     grid_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
@@ -62,6 +65,7 @@ class Smirch
         input_received
       end
     })
+    @input_box.font = Font.new(@display, "DejaVu Sans Mono", 15, 0)
   end
 
   def main_loop
@@ -77,19 +81,21 @@ class Smirch
     @input_box.text = ""
 
     if input[0] == ?/
-      args = input.split(/\s+/)
-      command = args.shift[1..-1]
+      command, predicate = input.split(/\s+/, 2)
 
       case command
-      when "server"
-        @client = Client.new(args[0], args[1].to_i, {
-          :nick => args[2], :user => args[3], :real => args[4]
-        })
+      when "/server"
+        args = predicate.split(/\s+/, 5)
+        @client = Client.new(args[0], args[1].to_i, args[2], args[3], args[4])
         @client.connect
 
         # start timers
         @display.timerExec(250, PollRunner.new(@display, @client))
         @display.timerExec(500, ReceiveRunner.new(@display, @client, @chat_box))
+      when "/msg"
+        args = predicate.split(/\s+/, 2)
+        @client.privmsg(*args)
+        @chat_box.append(">#{args[0]}< #{args[1]}\n")
       end
     end
   end

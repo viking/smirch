@@ -8,3 +8,9 @@ require 'smirch'
 
 class Test::Unit::TestCase
 end
+
+class TCPSocket
+  def new(*args)
+    raise "Don't connect to the internet in tests, yo!"
+  end
+end
