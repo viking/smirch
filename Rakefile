@@ -11,6 +11,8 @@ begin
     gem.homepage = "http://github.com/viking/smirch"
     gem.authors = ["Jeremy Stephens"]
     gem.platform = 'java'
+    gem.add_dependency('treetop')
+    gem.add_development_dependency('mocha')
 
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end

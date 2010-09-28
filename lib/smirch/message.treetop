@@ -1,0 +1,41 @@
+grammar Message
+  rule message
+    prefix_expression command params
+  end
+
+  rule prefix_expression
+    ':' prefix whitespace
+  end
+
+  rule prefix
+    server_name
+  end
+
+  rule server_name
+    host_part ('.' host_part)+
+  end
+
+  rule host_part
+    [a-zA-Z0-9]+
+  end
+
+  rule command
+    [a-zA-Z]+ / ([0-9] [0-9] [0-9])
+  end
+
+  rule params
+    whitespace ((':' trailing) / (middle params))?
+  end
+
+  rule trailing
+    .*
+  end
+
+  rule middle
+    [^:\s] [^\s]*
+  end
+
+  rule whitespace
+    ' '*
+  end
+end

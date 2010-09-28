@@ -4,7 +4,8 @@ class TestSmirch < Test::Unit::TestCase
   def stub_text(name = 'text widget', more_stubs = {})
     stub(name, {
       :layout_data= => nil, :background= => nil, :foreground= => nil,
-      :text => 'foo', :text= => nil, :font= => nil, :append => nil
+      :text => 'foo', :text= => nil, :font= => nil, :append => nil,
+      :set_focus => nil
     }.merge(more_stubs))
   end
 
@@ -30,10 +31,10 @@ class TestSmirch < Test::Unit::TestCase
     @grid_layout = stub('grid layout')
     Smirch::GridLayout.stubs(:new).returns(@grid_layout)
     @chat_box = stub_text('chat area')
-    Smirch::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
+    Smirch::StyledText.stubs(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
 
     @input_box = stub_text('input box')
-    Smirch::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
+    Smirch::StyledText.stubs(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
     @input_box.stubs(:add_key_listener).with { |l| @input_box_listener = l; true }
 
     @grid_data = stub_everything("GridData object")
@@ -63,10 +64,10 @@ class TestSmirch < Test::Unit::TestCase
     Smirch::GridLayout.expects(:new).with(1, true).returns(@grid_layout)
     @shell.expects(:layout=).with(@grid_layout)
 
-    Smirch::Text.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
+    Smirch::StyledText.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
     @chat_box.expects(:layout_data=).with(@grid_data)
 
-    Smirch::Text.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
+    Smirch::StyledText.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
     @input_box.expects(:layout_data=).with(@grid_data)
     @input_box.expects(:add_key_listener)
 
@@ -114,4 +115,11 @@ class TestSmirch < Test::Unit::TestCase
     @chat_box.expects(:append).with(">dude< hey\n")
     simulate_input("/msg dude hey")
   end
+
+  #def test_server_notice_received
+    #s = Smirch.new
+    #simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
+    #@chat_box.expects(:append).with("hey buddy\n")
+    #simulate_received(":gibson.freenode.net NOTICE * :hey buddy\r\n")
+  #end
 end
