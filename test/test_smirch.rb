@@ -31,10 +31,10 @@ class TestSmirch < Test::Unit::TestCase
     @grid_layout = stub('grid layout')
     Smirch::GridLayout.stubs(:new).returns(@grid_layout)
     @chat_box = stub_text('chat area')
-    Smirch::StyledText.stubs(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
+    Smirch::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
 
     @input_box = stub_text('input box')
-    Smirch::StyledText.stubs(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
+    Smirch::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
     @input_box.stubs(:add_key_listener).with { |l| @input_box_listener = l; true }
 
     @grid_data = stub_everything("GridData object")
@@ -64,10 +64,10 @@ class TestSmirch < Test::Unit::TestCase
     Smirch::GridLayout.expects(:new).with(1, true).returns(@grid_layout)
     @shell.expects(:layout=).with(@grid_layout)
 
-    Smirch::StyledText.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
+    Smirch::Text.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
     @chat_box.expects(:layout_data=).with(@grid_data)
 
-    Smirch::StyledText.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
+    Smirch::Text.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
     @input_box.expects(:layout_data=).with(@grid_data)
     @input_box.expects(:add_key_listener)
 
@@ -114,6 +114,13 @@ class TestSmirch < Test::Unit::TestCase
     @client.expects(:privmsg).with('dude', 'hey')
     @chat_box.expects(:append).with(">dude< hey\n")
     simulate_input("/msg dude hey")
+  end
+
+  def test_unknown_command
+    s = Smirch.new
+    simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
+    @client.expects(:execute).with('foo', 'huge bar')
+    simulate_input("/foo huge bar")
   end
 
   #def test_server_notice_received

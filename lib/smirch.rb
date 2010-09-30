@@ -9,7 +9,6 @@ class Smirch
   import "org.eclipse.swt.layout.GridData"
   import "org.eclipse.swt.events.KeyListener"
   import "org.eclipse.swt.graphics.Font"
-  import "org.eclipse.swt.custom.StyledText"
   include_package "org.eclipse.swt.widgets"
 
   class PollRunner
@@ -38,7 +37,9 @@ class Smirch
     def run
       queue = @client.queue
       while !queue.empty?
-        @chat_box.append(queue.shift + "\n")
+        message = queue.shift
+        p message
+        @chat_box.append(message + "\n")
       end
       @display.timerExec(500, self)
     end
@@ -52,13 +53,13 @@ class Smirch
 
     black = @display.system_color(SWT::COLOR_BLACK)
     white = @display.system_color(SWT::COLOR_WHITE)
-    @chat_box = StyledText.new(@shell, SWT::BORDER | SWT::MULTI | SWT::V_SCROLL | SWT::READ_ONLY)
+    @chat_box = Text.new(@shell, SWT::BORDER | SWT::MULTI | SWT::V_SCROLL | SWT::READ_ONLY)
     @chat_box.layout_data = GridData.new(GridData::FILL, GridData::FILL, true, true)
     @chat_box.background = black
     @chat_box.foreground = white
     @chat_box.font = Font.new(@display, "DejaVu Sans Mono", 18, 0)
 
-    @input_box = StyledText.new(@shell, SWT::BORDER)
+    @input_box = Text.new(@shell, SWT::BORDER)
     grid_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
     grid_data.heightHint = 25
     @input_box.layout_data = grid_data
@@ -100,6 +101,8 @@ class Smirch
         args = predicate.split(/\s+/, 2)
         @client.privmsg(*args)
         @chat_box.append(">#{args[0]}< #{args[1]}\n")
+      else
+        @client.execute(command[1..-1], predicate)
       end
     end
   end

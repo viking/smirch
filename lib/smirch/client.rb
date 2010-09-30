@@ -45,5 +45,9 @@ class Smirch
     def privmsg(user, message)
       @socket.write_nonblock("PRIVMSG #{user} :#{message}\r\n")
     end
+
+    def execute(command, predicate)
+      @socket.write_nonblock("#{command.upcase} #{predicate}\r\n")
+    end
   end
 end

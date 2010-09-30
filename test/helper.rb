@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'test/unit'
 require 'mocha'
+require 'pp'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))

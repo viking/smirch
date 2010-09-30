@@ -61,5 +61,11 @@ class Smirch
       @socket.expects(:write_nonblock).with("PRIVMSG dude :hey buddy\r\n")
       @client.privmsg('dude', 'hey buddy')
     end
+
+    def test_execute
+      @client.connect
+      @socket.expects(:write_nonblock).with("FOO huge bar\r\n")
+      @client.execute('foo', 'huge bar')
+    end
   end
 end

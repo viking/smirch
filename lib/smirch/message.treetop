@@ -1,22 +1,72 @@
+# See http://tools.ietf.org/html/rfc1459#section-2.3.1
+
 grammar Message
   rule message
     prefix_expression command params
   end
 
   rule prefix_expression
-    ':' prefix whitespace
+    ':' origin whitespace
   end
 
-  rule prefix
-    server_name
+  rule origin
+    server_name {
+      def type
+        :server
+      end
+    }
+    /
+    user_name {
+      def type
+        :client
+      end
+    }
   end
 
   rule server_name
-    host_part ('.' host_part)+
+    host_name
+  end
+
+  # ChanServ's hostname is 'services.'
+  rule host_name
+    (host_part '.')+ host_part?
   end
 
   rule host_part
-    [a-zA-Z0-9]+
+    [a-zA-Z0-9\-]+
+  end
+
+  rule user_name
+    nick user_info?
+  end
+
+  rule nick
+    (alpha / special) (alphanumeric / special)+
+  end
+
+  rule user_info
+    ('!' user '@' host_name_or_cloak)
+    /
+    ('!' user) {
+      def host_name_or_cloak; nil; end
+    }
+    /
+    ('@' host_name_or_cloak) {
+      def user; nil; end
+    }
+  end
+
+  rule user
+    [^ \000\r\n@]+
+  end
+
+  rule host_name_or_cloak
+    host_name / cloak
+  end
+
+  # I don't actually know what the exact format for this is.
+  rule cloak
+    (alpha / special)+ ('/' (alphanumeric / special)+)+
   end
 
   rule command
@@ -24,7 +74,11 @@ grammar Message
   end
 
   rule params
-    whitespace ((':' trailing) / (middle params))?
+    whitespace (
+      (':' trailing)
+      /
+      (middle params)
+    )?
   end
 
   rule trailing
@@ -37,5 +91,17 @@ grammar Message
 
   rule whitespace
     ' '*
+  end
+
+  rule special
+    [_\-\[\]\\`^{}]
+  end
+
+  rule alpha
+    [a-zA-Z]
+  end
+
+  rule alphanumeric
+    [a-zA-Z0-9]
   end
 end
