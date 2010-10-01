@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestSmirch < Test::Unit::TestCase
+class TestSmirch
   def stub_text(name = 'text widget', more_stubs = {})
     stub(name, {
       :layout_data= => nil, :background= => nil, :foreground= => nil,

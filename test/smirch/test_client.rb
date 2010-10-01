@@ -1,12 +1,12 @@
 require 'helper'
 
-class Smirch
+class TestSmirch
   class TestClient < Test::Unit::TestCase
     def setup
       super
       @socket = stub('socket', :write => nil)
       TCPSocket.stubs(:new).returns(@socket)
-      @client = Client.new('irc.freenode.net', 6667, 'smirch', 'smirch', 'Smirchy Guy')
+      @client = Smirch::Client.new('irc.freenode.net', 6667, 'smirch', 'smirch', 'Smirchy Guy')
     end
 
     def test_connect
