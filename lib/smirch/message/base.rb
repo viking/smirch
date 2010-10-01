@@ -1,7 +1,7 @@
 class Smirch
   module Message
     class Base
-      attr_reader :from, :text, :code
+      attr_reader :from, :text, :code, :channel
 
       def initialize(root)
         common_setup(root)
