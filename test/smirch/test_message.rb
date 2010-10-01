@@ -198,7 +198,7 @@ class TestSmirch
     end
 
     def test_RPL_MOTDSTART
-      message = %{:asimov.freenode.net 375 crookshanks :- asimov.freenode.net Message of the Day - }
+      message = %{:asimov.freenode.net 375 crookshanks :- asimov.freenode.net Smirch::Message of the Day - }
       result = Smirch::Message.parse(message)
       assert_instance_of Smirch::Message::Numeric, result
       assert_equal 375, result.code
@@ -207,7 +207,7 @@ class TestSmirch
       assert_equal "asimov.freenode.net", from.name
       assert from.server?
 
-      assert_equal %{- asimov.freenode.net Message of the Day - }, result.text
+      assert_equal %{- asimov.freenode.net Smirch::Message of the Day - }, result.text
     end
 
     def test_RPL_MOTD
@@ -346,159 +346,178 @@ class TestSmirch
       assert_equal "*** Looking up your hostname...", result.text
     end
 
-    #def test_NOTICE_from_user
-      #message = %{:viking!~viking@huge.com NOTICE crookshanks :oh hai}
-      #result = Message.parse(message)
-      #assert_equal "NOTICE", result.command
+    def test_NOTICE_from_user
+      message = %{:viking!~viking@example.com NOTICE crookshanks :oh hai}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Notice, result
 
-      #from = result.from
-      #assert_equal "viking!~viking@huge.com", from.name
-      #assert_equal "viking", from.nick
-      #assert_equal "~viking", from.user
-      #assert_equal "huge.com", from.host
-      #assert from.client?
+      from = result.from
+      assert_equal "viking!~viking@example.com", from.name
+      assert_equal "viking", from.nick
+      assert_equal "~viking", from.user
+      assert_equal "example.com", from.host
+      assert from.client?
 
-      #recipient = result.recipient
-      #assert_equal "crookshanks", recipient.name
-      #assert_equal "crookshanks", recipient.nick
-      #assert recipient.client?
+      assert_equal "oh hai", result.text
+    end
 
-      #assert_equal "oh hai", result.text
-    #end
+    def test_NOTICE_from_services
+      message = %{:ChanServ!ChanServ@services. NOTICE crookshanks :[#vim] vim discussion .. www.vim.org, vim.sf.net, :help}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Notice, result
 
-    #def test_NOTICE_from_services
-      #message = %{:ChanServ!ChanServ@services. NOTICE crookshanks :[#vim] vim discussion .. www.vim.org, vim.sf.net, :help}
-      #result = Message.parse(message)
-      #assert_equal "NOTICE", result.command
+      from = result.from
+      assert_equal "ChanServ!ChanServ@services.", from.name
+      assert_equal "ChanServ", from.nick
+      assert_equal "ChanServ", from.user
+      assert_equal "services.", from.host
+      assert from.client?
 
-      #from = result.from
-      #assert_equal "ChanServ!ChanServ@services.", from.name
-      #assert_equal "ChanServ", from.nick
-      #assert_equal "ChanServ", from.user
-      #assert_equal "services.", from.host
-      #assert from.client?
+      assert_equal "[#vim] vim discussion .. www.vim.org, vim.sf.net, :help", result.text
+    end
 
-      #recipient = result.recipient
-      #assert_equal "crookshanks", recipient.name
-      #assert_equal "crookshanks", recipient.nick
-      #assert recipient.client?
+    def test_PRIVMSG_from_user
+      message = %{:viking!~viking@pdpc/supporter/21for7/viking PRIVMSG crookshanks :foo}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Privmsg, result
 
-      #assert_equal "[#vim] vim discussion .. www.vim.org, vim.sf.net, :help", result.text
-    #end
+      from = result.from
+      assert_equal "viking!~viking@pdpc/supporter/21for7/viking", from.name
+      assert_equal "viking", from.nick
+      assert_equal "~viking", from.user
+      assert_equal "pdpc/supporter/21for7/viking", from.host
+      assert from.client?
 
-    #def test_PRIVMSG_from_user
-      #message = %{:viking!~viking@pdpc/supporter/21for7/viking PRIVMSG crookshanks :foo}
-      #result = Message.parse(message)
-      #assert_equal "PRIVMSG", result.command
+      assert_equal "foo", result.text
+    end
 
-      #from = result.from
-      #assert_equal "viking!~viking@pdpc/supporter/21for7/viking", from.name
-      #assert_equal "viking", from.nick
-      #assert_equal "~viking", from.user
-      #assert_equal "pdpc/supporter/21for7/viking", from.host
-      #assert from.client?
+    def test_PRIVMSG_to_channel
+      message = %{:Silex!~ask@unitedsoft.ch PRIVMSG #vim ::D}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Privmsg, result
 
-      #recipient = result.recipient
-      #assert_equal "crookshanks", recipient.name
-      #assert_equal "crookshanks", recipient.nick
-      #assert recipient.client?
+      from = result.from
+      assert_equal "Silex!~ask@unitedsoft.ch", from.name
+      assert_equal "Silex", from.nick
+      assert_equal "~ask", from.user
+      assert_equal "unitedsoft.ch", from.host
+      assert from.client?
 
-      #assert_equal "foo", result.text
-    #end
+      assert_equal "#vim", result.channel
+      assert_equal ":D", result.text
+    end
 
-    #def test_PRIVMSG_to_channel
-      #message = %{:Silex!~ask@unitedsoft.ch PRIVMSG #vim ::D}
-      #result = Message.parse(message)
-      #assert_equal "PRIVMSG", result.command
+    def test_MODE_for_user
+      message = %{:crookshanks MODE crookshanks :+i}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Mode, result
 
-      #from = result.from
-      #assert_equal "Silex!~ask@unitedsoft.ch", from.name
-      #assert_equal "Silex", from.nick
-      #assert_equal "~ask", from.user
-      #assert_equal "unitedsoft.ch", from.host
-      #assert from.client?
+      from = result.from
+      assert_equal "crookshanks", from.name
+      assert_equal "crookshanks", from.nick
+      assert from.client?
 
-      #recipient = result.recipient
-      #assert_equal "#vim", recipient.name
-      #assert recipient.channel?
+      assert_equal "+i", result.text
+    end
 
-      #assert_equal ":D", result.text
-    #end
+    def test_MODE_for_channel_1
+      message = %{:viking!~viking@example.com MODE #hugetown +t }
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Mode, result
 
-    #def test_MODE
-      #message = %{:crookshanks MODE crookshanks :+i}
-      #result = Message.parse(message)
-      #assert_equal "MODE", result.command
+      from = result.from
+      assert_equal "viking!~viking@example.com", from.name
+      assert_equal "viking", from.nick
+      assert_equal "~viking", from.user
+      assert_equal "example.com", from.host
+      assert from.client?
 
-      #from = result.from
-      #assert_equal "crookshanks", from.name
-      #assert_equal "crookshanks", from.nick
-      #assert from.client?
+      assert_equal "#hugetown", result.channel
+      assert_equal "+t", result.text
+    end
 
-      #recipient = result.recipient
-      #assert_equal "crookshanks", recipient.name
-      #assert_equal "crookshanks", recipient.nick
-      #assert recipient.client?
+    def test_MODE_for_channel_2
+      message = %{:viking!~viking@example.com MODE #hugetown -o crookshanks}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Mode, result
 
-      #assert_equal "+i", result.text
-    #end
+      from = result.from
+      assert_equal "viking!~viking@example.com", from.name
+      assert_equal "viking", from.nick
+      assert_equal "~viking", from.user
+      assert_equal "example.com", from.host
+      assert from.client?
 
-    #def test_JOIN
-      #message = %{:apropos!~apropos@89-168-187-13.dynamic.dsl.as9105.com JOIN :#vim}
-      #result = Message.parse(message)
-      #assert_equal "JOIN", result.command
+      assert_equal "#hugetown", result.channel
+      assert_equal "-o crookshanks", result.text
+    end
 
-      #from = result.from
-      #assert_equal "apropos!~apropos@89-168-187-13.dynamic.dsl.as9105.com", from.name
-      #assert_equal "apropos", from.nick
-      #assert_equal "~apropos", from.user
-      #assert_equal "89-168-187-13.dynamic.dsl.as9105.com", from.host
-      #assert from.client?
+    def test_JOIN
+      message = %{:apropos!~apropos@89-168-187-13.dynamic.dsl.as9105.com JOIN :#vim}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Join, result
 
-      #channel = result.channel
-      #assert_equal "#vim", channel.name
-      #assert channel.channel?
-    #end
+      from = result.from
+      assert_equal "apropos!~apropos@89-168-187-13.dynamic.dsl.as9105.com", from.name
+      assert_equal "apropos", from.nick
+      assert_equal "~apropos", from.user
+      assert_equal "89-168-187-13.dynamic.dsl.as9105.com", from.host
+      assert from.client?
 
-    #def test_QUIT
-      #message = %{:Hates_!~hates_@host90-152-2-218.ipv4.regusnet.com QUIT :Read error: Connection reset by peer}
-      #result = Message.parse(message)
-      #assert_equal "QUIT", result.command
+      assert_equal "#vim", result.channel
+    end
 
-      #from = result.from
-      #assert_equal "Hates_!~hates_@host90-152-2-218.ipv4.regusnet.com", from.name
-      #assert_equal "Hates_", from.nick
-      #assert_equal "~hates_", from.user
-      #assert_equal "host90-152-2-218.ipv4.regusnet.com", from.host
-      #assert from.client?
+    def test_PART
+      message = %{:viking!~viking@example.com PART #hugetown}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Part, result
 
-      #assert_equal "Read error: Connection reset by peer", result.text
-    #end
+      from = result.from
+      assert_equal "viking!~viking@example.com", from.name
+      assert_equal "viking", from.nick
+      assert_equal "~viking", from.user
+      assert_equal "example.com", from.host
+      assert from.client?
 
-    #def test_PART
-      #message = %{:viking!~viking@pdpc/supporter/21for7/viking PART #hugetown :"Leaving"}
-      #result = Message.parse(message)
-      #assert_equal "PART", result.command
+      assert_equal '#hugetown', result.channel
+    end
 
-      #from = result.from
-      #assert_equal "viking!~viking@pdpc/supporter/21for7/viking", from.name
-      #assert_equal "viking", from.nick
-      #assert_equal "~viking", from.user
-      #assert_equal "pdpc/supporter/21for7/viking", from.host
-      #assert from.client?
+    def test_PART_with_message
+      message = %{:viking!~viking@example.com PART #hugetown :"Leaving"}
+      result = Smirch::Message.parse(message)
 
-      #recipient = result.recipient
-      #assert_equal "#hugetown", recipient.name
-      #assert recipient.channel?
+      from = result.from
+      assert_equal "viking!~viking@example.com", from.name
+      assert_equal "viking", from.nick
+      assert_equal "~viking", from.user
+      assert_equal "example.com", from.host
+      assert from.client?
 
-      #assert_equal %{"Leaving"}, result.text
-    #end
+      assert_equal '#hugetown', result.channel
+      assert_equal %{"Leaving"}, result.text
+    end
+
+    def test_QUIT
+      message = %{:Hates_!~hates_@host90-152-2-218.ipv4.regusnet.com QUIT :Read error: Connection reset by peer}
+      result = Smirch::Message.parse(message)
+      assert_instance_of Smirch::Message::Quit, result
+
+      from = result.from
+      assert_equal "Hates_!~hates_@host90-152-2-218.ipv4.regusnet.com", from.name
+      assert_equal "Hates_", from.nick
+      assert_equal "~hates_", from.user
+      assert_equal "host90-152-2-218.ipv4.regusnet.com", from.host
+      assert from.client?
+
+      assert_equal "Read error: Connection reset by peer", result.text
+    end
 
     ##def test_CTCP
       ##message = %{:frigg!~frigg@freenode/utility-bot/frigg PRIVMSG crookshanks :\001VERSION\001}
-      ##parser = MessageParser.new
+      ##parser = Smirch::MessageParser.new
       ##result = parser.parse(message)
       ##assert result, parser.failure_reason
+    #assert_equal %{:\001VERSION\001}, result.text
     ##end
   end
 end

@@ -7,8 +7,9 @@ class Smirch
       command = result.command.text_value
       klass = case command
         when /^\d{3}$/  then Message::Numeric
-        when "NOTICE"   then Message::Notice
-      end
+        when /^[A-Z]+$/
+          Message.const_get(command[0..0] + command[1..-1].downcase)
+        end
 
       klass.new(result)
     end

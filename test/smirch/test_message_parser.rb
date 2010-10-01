@@ -135,8 +135,15 @@ class TestSmirch
       assert result, parser.failure_reason
     end
 
-    def test_MODE
+    def test_MODE_for_user
       message = %{:crookshanks MODE crookshanks :+i}
+      parser = MessageParser.new
+      result = parser.parse(message)
+      assert result, parser.failure_reason
+    end
+
+    def test_MODE_for_channel
+      message = %{:viking!~viking@pdpc/supporter/21for7/viking MODE #hugetown +t }
       parser = MessageParser.new
       result = parser.parse(message)
       assert result, parser.failure_reason
@@ -178,7 +185,7 @@ class TestSmirch
     end
 
     def test_NOTICE_from_user
-      message = %{:viking!~viking@huge.com NOTICE crookshanks :oh hai}
+      message = %{:viking!~viking@example.com NOTICE crookshanks :oh hai}
       parser = MessageParser.new
       result = parser.parse(message)
       assert result, parser.failure_reason

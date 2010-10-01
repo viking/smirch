@@ -1,9 +1,9 @@
 class Smirch
   module Message
-    class Notice < Base
+    class Join < Base
       private
         def setup(command, middle, trailing)
-          @text = trailing
+          @channel = trailing
         end
     end
   end
