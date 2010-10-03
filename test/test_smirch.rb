@@ -25,7 +25,7 @@ class TestSmirch
     @color = stub('color')
     @display = stub('display', :read_and_dispatch => false, :sleep => nil, :dispose => nil, :system_color => @color, :timerExec => nil)
     Smirch::Display.stubs(:new).returns(@display)
-    @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil)
+    @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil, :menu_bar= => nil)
     @shell.stubs(:disposed?).returns(false, true)
     Smirch::Shell.stubs(:new).returns(@shell)
     @grid_layout = stub('grid layout')
@@ -45,6 +45,13 @@ class TestSmirch
 
     @client = stub('client', :connect => nil, :queue => [])
     Smirch::Client.stubs(:new).returns(@client)
+
+    @menu = stub('menu')
+    Smirch::Menu.stubs(:new).returns(@menu)
+    Smirch::MenuItem.stubs(:new).returns(stub_everything('menu item'))
+    Smirch::FormLayout.stubs(:new).returns(stub_everything('form layout'))
+    Smirch::Label.stubs(:new).returns(stub_everything('label'))
+    Smirch::Button.stubs(:new).returns(stub_everything('button'))
   end
 
   def test_window

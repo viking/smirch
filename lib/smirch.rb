@@ -5,11 +5,10 @@ require File.dirname(__FILE__) + "/swt.jar"
 
 class Smirch
   import "org.eclipse.swt.SWT"
-  import "org.eclipse.swt.layout.GridLayout"
-  import "org.eclipse.swt.layout.GridData"
   import "org.eclipse.swt.events.KeyListener"
   import "org.eclipse.swt.graphics.Font"
   include_package "org.eclipse.swt.widgets"
+  include_package "org.eclipse.swt.layout"
 
   class PollRunner
     include java.lang.Runnable
@@ -48,6 +47,17 @@ class Smirch
   def initialize
     @display = Display.new
     @shell = Shell.new(@display)
+
+    @menu = Menu.new(@shell, SWT::BAR)
+    @shell.menu_bar = @menu
+    file_item = MenuItem.new(@menu, SWT::CASCADE)
+    file_item.text = "&File"
+    sub_menu = Menu.new(@shell, SWT::DROP_DOWN)
+    file_item.menu = sub_menu
+    config_item = MenuItem.new(sub_menu, SWT::PUSH)
+    config_item.text = "&Settings"
+    config_item.add_listener(SWT::Selection) { |event| settings(event) }
+
     @grid_layout = GridLayout.new(1, true)
     @shell.layout = @grid_layout
 
@@ -105,6 +115,46 @@ class Smirch
         @client.execute(command[1..-1], predicate)
       end
     end
+  end
+
+  def settings(event)
+    dialog = Shell.new(@shell, SWT::DIALOG_TRIM | SWT::PRIMARY_MODAL)
+    dialog.set_size(300, 300)
+    layout = GridLayout.new(2, false)
+    dialog.layout = layout
+
+    server_label = Label.new(dialog, SWT::LEFT)
+    server_label.text = "Server"
+    server_input = Text.new(dialog, SWT::BORDER)
+    server_input.layout_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
+
+    port_label = Label.new(dialog, SWT::LEFT)
+    port_label.text = "Port"
+    port_input = Text.new(dialog, SWT::BORDER)
+    port_input.layout_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
+
+    nick_label = Label.new(dialog, SWT::LEFT)
+    nick_label.text = "Nick"
+    nick_input = Text.new(dialog, SWT::BORDER)
+    nick_input.layout_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
+
+    user_label = Label.new(dialog, SWT::LEFT)
+    user_label.text = "User"
+    user_input = Text.new(dialog, SWT::BORDER)
+    user_input.layout_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
+
+    real_label = Label.new(dialog, SWT::LEFT)
+    real_label.text = "Real Name"
+    real_input = Text.new(dialog, SWT::BORDER)
+    real_input.layout_data = GridData.new(GridData::FILL, GridData::FILL, true, false)
+
+    save_button = Button.new(dialog, SWT::PUSH)
+    save_button.text = "Save"
+    cancel_button = Button.new(dialog, SWT::PUSH)
+    cancel_button.text = "Cancel"
+
+    dialog.pack
+    dialog.open
   end
 end
 
