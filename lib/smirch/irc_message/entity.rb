@@ -1,5 +1,5 @@
-class Smirch
-  module Message
+module Smirch
+  module IrcMessage
     class Entity
       attr_reader :name, :nick, :user, :host
 

@@ -1,5 +1,5 @@
-class Smirch
-  module Message
+module Smirch
+  module IrcMessage
     class Mode < Base
       private
         def setup(command, middle, trailing)

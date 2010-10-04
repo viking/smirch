@@ -1,10 +1,7 @@
 require 'redgreen/autotest'
 
 Autotest.add_hook(:initialize) do |at|
-  at.add_mapping(%r{^lib/smirch/message/}, true) do |f, md|
-    %w{test/smirch/test_message.rb}
-  end
-  at.add_mapping(%r{^lib/smirch/message\.treetop$}) do |f, md|
-    %w{test/smitch/test_message_parser.rb}
+  at.add_mapping(%r{^lib/smirch/irc_message/}, true) do |f, md|
+    %w{test/smirch/test_irc_message.rb}
   end
 end

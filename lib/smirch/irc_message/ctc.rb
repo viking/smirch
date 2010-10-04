@@ -1,5 +1,5 @@
-class Smirch
-  module Message
+module Smirch
+  module IrcMessage
     class CTC < Base  # client-to-client
       private
         def setup(command, middle, trailing)

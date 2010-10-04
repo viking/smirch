@@ -1,5 +1,5 @@
-class Smirch
-  class Client
+module Smirch
+  class IrcClient
     attr_reader :queue
     def initialize(host, port, nick, user, real)
       @host = host

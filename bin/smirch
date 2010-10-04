@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require File.dirname(__FILE__) + '/../lib/smirch'
-Smirch.new.main_loop
+window = Smirch::MainWindow.new
+window.main_loop

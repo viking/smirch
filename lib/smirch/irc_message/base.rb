@@ -1,5 +1,5 @@
-class Smirch
-  module Message
+module Smirch
+  module IrcMessage
     class Base
       attr_reader :from, :text, :code, :channel
 

@@ -1,6 +1,6 @@
 # See http://tools.ietf.org/html/rfc1459#section-2.3.1
 
-grammar Message
+grammar IrcMessage
   rule message
     prefix_expression command params
   end
