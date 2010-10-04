@@ -1,6 +1,8 @@
 require 'java'
 require 'socket'
 require 'treetop'
+require 'yaml'
+require 'etc'
 require File.dirname(__FILE__) + "/swt.jar"
 
 module Smirch
@@ -20,6 +22,15 @@ module Smirch
 
   module Layout
     include_package "org.eclipse.swt.layout"
+  end
+
+  def self.load_config
+    path = File.join(Etc.getpwuid.dir, '.smirchrc')
+    File.exist?(path) ? YAML.load_file(path) : nil
+  end
+
+  def self.save_config(hash)
+    File.open(File.join(Etc.getpwuid.dir, '.smirchrc'), 'w') { |f| f.write(hash.to_yaml) }
   end
 end
 

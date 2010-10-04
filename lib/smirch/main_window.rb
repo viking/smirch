@@ -91,15 +91,13 @@ module Smirch
         command, predicate = input.split(/\s+/, 2)
 
         case command
+        when "/connect"
+          config = Smirch.load_config
+          setup_client(config.values_at('server', 'port', 'nick', 'user', 'real'))
         when "/server"
           args = predicate.split(/\s+/, 5)
           args[1] = args[1].to_i
-          @client = IrcClient.new(*args)
-          @client.connect
-
-          # start timers
-          @display.timerExec(250, PollRunner.new(@display, @client))
-          @display.timerExec(500, ReceiveRunner.new(@display, @client, @chat_box))
+          setup_client(args)
         when "/msg"
           args = predicate.split(/\s+/, 2)
           @client.privmsg(*args)
@@ -109,5 +107,15 @@ module Smirch
         end
       end
     end
+
+    private
+      def setup_client(args)
+        @client = IrcClient.new(*args)
+        @client.connect
+
+        # start timers
+        @display.timerExec(250, PollRunner.new(@display, @client))
+        @display.timerExec(500, ReceiveRunner.new(@display, @client, @chat_box))
+      end
   end
 end

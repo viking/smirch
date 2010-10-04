@@ -49,9 +49,8 @@ class TestSmirch
 
       @menu = stub('menu')
       Smirch::Widgets::Menu.stubs(:new).returns(@menu)
-      Smirch::Widgets::MenuItem.stubs(:new).returns(stub_everything('menu item'))
-      Smirch::Widgets::Label.stubs(:new).returns(stub_everything('label'))
-      Smirch::Widgets::Button.stubs(:new).returns(stub_everything('button'))
+      @menu_item = stub('menu item', :text= => nil, :add_listener => nil, :menu= => nil)
+      Smirch::Widgets::MenuItem.stubs(:new).returns(@menu_item)
     end
 
     def test_window
@@ -128,6 +127,17 @@ class TestSmirch
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       @client.expects(:execute).with('foo', 'huge bar')
       simulate_input("/foo huge bar")
+    end
+
+    def test_connect
+      config = {'server' => 'irc.freenode.net', 'port' => 6666, 'nick' => 'MyNick', 'user' => 'MyUser', 'real' => 'Dude guy'}
+      Smirch.expects(:load_config).returns(config)
+
+      Smirch::IrcClient.expects(:new).with('irc.freenode.net', 6666, 'MyNick', 'MyUser', 'Dude guy').returns(@client)
+      @client.expects(:connect)
+
+      s = Smirch::MainWindow.new
+      simulate_input("/connect")
     end
 
     #def test_server_notice_received
