@@ -28,7 +28,8 @@ module Smirch
               if message =~ /^PING/
                 @socket.write_nonblock("PONG\r\n")
               else
-                @queue.push(message)
+                result = IrcMessage.parse(message)
+                @queue.push(result)
               end
             end
             break if remaining.empty?

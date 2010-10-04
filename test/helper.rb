@@ -11,6 +11,11 @@ class Test::Unit::TestCase
 end
 
 class TestSmirch < Test::Unit::TestCase
+  class TestIrcMessage < Test::Unit::TestCase
+    def test_blah
+      # silly autotest
+    end
+  end
   def test_blah
     # silly autotest
   end

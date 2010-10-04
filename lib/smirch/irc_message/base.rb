@@ -7,6 +7,11 @@ module Smirch
         common_setup(root)
       end
 
+      def draw(window)
+        chat_box = window.chat_box
+        chat_box.append("#{@text}\n")
+      end
+
       protected
         def common_setup(root)
           node = root.prefix_expression.origin
@@ -34,23 +39,6 @@ module Smirch
         def setup(command, middle, trailing)
           raise NotImplementedError
         end
-      #attr_reader :command, :origin, :recipient, :text, :channel
-
-      #def initialize(command, origin, recipient, text)
-        #@command = command
-        #@origin = origin
-        #@recipient = recipient
-        #@text = text
-        #additional_setup
-      #end
-
-      #private
-        #def additional_setup
-          #case command
-          #when 'JOIN'
-            #@channel = Entity.new(@text, :type => :channel)
-          #end
-        #end
     end
   end
 end

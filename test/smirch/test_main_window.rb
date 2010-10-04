@@ -99,19 +99,6 @@ class TestSmirch
 
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       assert_not_nil poll_runner
-
-      # test runners; should probably do this elsewhere
-      timer_1 = sequence('timer 1')
-      @display.expects(:asyncExec).yields.in_sequence(timer_1)
-      @client.expects(:poll).in_sequence(timer_1)
-      @display.expects(:timerExec).with(500, poll_runner).in_sequence(timer_1)
-      poll_runner.run
-
-      timer_2 = sequence('timer 2')
-      @client.expects(:queue).returns(["foo"]).in_sequence(timer_2)
-      @chat_box.expects(:append).with("foo\n").in_sequence(timer_2)
-      @display.expects(:timerExec).with(500, receive_runner).in_sequence(timer_2)
-      receive_runner.run
     end
 
     def test_msg_command
@@ -138,6 +125,33 @@ class TestSmirch
 
       s = Smirch::MainWindow.new
       simulate_input("/connect")
+    end
+
+    def test_poll_runner
+      # test runners; should probably do this elsewhere
+      display = stub('display')
+      client = stub('client')
+      runner = Smirch::MainWindow::PollRunner.new(display, client)
+
+      run_seq = sequence('running')
+      display.expects(:asyncExec).in_sequence(run_seq).yields
+      client.expects(:poll).in_sequence(run_seq)
+      display.expects(:timerExec).with(500, runner)
+      runner.run
+    end
+
+    def test_receive_runner
+      message = stub('message')
+      display = stub('display')
+      client = stub('client')
+      parent = stub('main window')
+      runner = Smirch::MainWindow::ReceiveRunner.new(display, client, parent)
+
+      run_seq = sequence('running')
+      client.expects(:queue).in_sequence(run_seq).returns([message])
+      message.expects(:draw).with(parent).in_sequence(run_seq)
+      display.expects(:timerExec).with(500, runner)
+      runner.run
     end
 
     #def test_server_notice_received

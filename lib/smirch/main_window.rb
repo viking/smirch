@@ -17,22 +17,23 @@ module Smirch
     class ReceiveRunner
       include java.lang.Runnable
 
-      def initialize(display, client, chat_box)
+      def initialize(display, client, parent)
         @display = display
         @client = client
-        @chat_box = chat_box
+        @parent = parent
       end
 
       def run
         queue = @client.queue
         while !queue.empty?
           message = queue.shift
-          p message
-          @chat_box.append(message + "\n")
+          message.draw(@parent)
         end
         @display.timerExec(500, self)
       end
     end
+
+    attr_reader :chat_box
 
     def initialize
       @display = Widgets::Display.new
@@ -115,7 +116,7 @@ module Smirch
 
         # start timers
         @display.timerExec(250, PollRunner.new(@display, @client))
-        @display.timerExec(500, ReceiveRunner.new(@display, @client, @chat_box))
+        @display.timerExec(500, ReceiveRunner.new(@display, @client, self))
       end
   end
 end

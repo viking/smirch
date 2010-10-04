@@ -1,7 +1,7 @@
 require 'redgreen/autotest'
 
 Autotest.add_hook(:initialize) do |at|
-  at.add_mapping(%r{^lib/smirch/irc_message/}, true) do |f, md|
-    %w{test/smirch/test_irc_message.rb}
+  at.add_mapping(%r{^lib/smirch/irc_message/(.+)$}, true) do |f, md|
+    at.files_matching(%r{test/smirch/(?:test_irc_message\.rb|irc_message/test_#{md[1]})})
   end
 end

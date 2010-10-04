@@ -18,13 +18,14 @@ class TestSmirch
     end
 
     def test_poll_fills_queue
-      @client.connect
+      messages = Array.new(4) { |i| stub("irc message #{i}") }
+      data = [%{:gibson.freenode.net NOTICE * :*** Looking up your hostname...}, %{:gibson.freenode.net NOTICE * :*** Checking Ident}, %{:gibson.freenode.net NOTICE * :*** No Ident response}, %{:gibson.freenode.net NOTICE * :*** Couldn't look up your hostname}, ""]
+      @socket.expects(:read_nonblock).with(512).returns(data.join("\r\n"))
+      4.times { |i| Smirch::IrcMessage.expects(:parse).with(data[i]).returns(messages[i]) }
 
-      message = %{:gibson.freenode.net NOTICE * :*** Looking up your hostname...\r\n:gibson.freenode.net NOTICE * :*** Checking Ident\r\n:gibson.freenode.net NOTICE * :*** No Ident response\r\n:gibson.freenode.net NOTICE * :*** Couldn't look up your hostname\r\n}
-      @socket.expects(:read_nonblock).with(512).returns(message)
+      @client.connect
       @client.poll
-      assert_equal 4, @client.queue.length
-      assert_equal ":gibson.freenode.net NOTICE * :*** Looking up your hostname...", @client.queue.shift
+      assert_equal messages, @client.queue
     end
 
     def test_poll_no_data
@@ -36,6 +37,7 @@ class TestSmirch
     def test_poll_lots_of_data
       @client.connect
 
+      Smirch::IrcMessage.stubs(:parse).returns(stub_everything('message'))
       message = ""
       100.times { message << ":gibson.freenode.net NOTICE * :hey buddy\r\n" }
       num = (message.length / 512.0).ceil
