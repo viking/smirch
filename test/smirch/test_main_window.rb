@@ -31,8 +31,13 @@ class TestSmirch
       Smirch::Widgets::Shell.stubs(:new).returns(@shell)
       @grid_layout = stub('grid layout')
       Smirch::Layout::GridLayout.stubs(:new).returns(@grid_layout)
+
+      @tab_folder = stub('tab folder', :layout_data= => nil)
+      Smirch::Widgets::TabFolder.stubs(:new).returns(@tab_folder)
+      @tab_item = stub('tab item', :text= => nil, :control= => nil)
+      Smirch::Widgets::TabItem.stubs(:new).returns(@tab_item)
       @chat_box = stub_text('chat area')
-      Smirch::Widgets::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
+      Smirch::Widgets::Text.stubs(:new).with(@tab_folder, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
 
       @input_box = stub_text('input box')
       Smirch::Widgets::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
@@ -53,7 +58,7 @@ class TestSmirch
       Smirch::Widgets::MenuItem.stubs(:new).returns(@menu_item)
     end
 
-    def test_window
+    def test_window_and_main_loop
       Smirch::Widgets::Display.expects(:new).returns(@display)
       Smirch::Widgets::Shell.expects(:new).with(@display).returns(@shell)
       @shell.expects(:open)
@@ -70,8 +75,10 @@ class TestSmirch
       Smirch::Layout::GridLayout.expects(:new).with(1, true).returns(@grid_layout)
       @shell.expects(:layout=).with(@grid_layout)
 
-      Smirch::Widgets::Text.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
-      @chat_box.expects(:layout_data=).with(@grid_data)
+      Smirch::Widgets::TabFolder.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::BOTTOM).returns(@tab_folder)
+      @tab_folder.expects(:layout_data=).with(@grid_data)
+
+      Smirch::Widgets::Text.expects(:new).with(@tab_folder, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
 
       Smirch::Widgets::Text.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
       @input_box.expects(:layout_data=).with(@grid_data)
@@ -109,10 +116,22 @@ class TestSmirch
       simulate_input("/msg dude hey")
     end
 
+    def test_msg_requires_connection
+      @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
+      s = Smirch::MainWindow.new
+      simulate_input("/msg dude hey")
+    end
+
     def test_unknown_command
       s = Smirch::MainWindow.new
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       @client.expects(:execute).with('foo', 'huge bar')
+      simulate_input("/foo huge bar")
+    end
+
+    def test_unknown_command_requires_connection
+      @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
+      s = Smirch::MainWindow.new
       simulate_input("/foo huge bar")
     end
 

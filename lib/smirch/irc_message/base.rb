@@ -4,11 +4,13 @@ module Smirch
       attr_reader :from, :text, :code, :channel
 
       def initialize(root)
+        @raw = root.text_value
         common_setup(root)
       end
 
       def draw(window)
-        chat_box = window.chat_box
+        p @raw
+        chat_box = window.current_chat_box
         chat_box.append("#{@text}\n")
       end
 
