@@ -408,7 +408,7 @@ module IrcMessage
       elements[1]
     end
 
-    def host_name_or_cloak
+    def host_or_cloak
       elements[3]
     end
   end
@@ -420,11 +420,11 @@ module IrcMessage
   end
 
   module UserInfo2
-    def host_name_or_cloak; nil; end
+    def host_or_cloak; nil; end
   end
 
   module UserInfo3
-    def host_name_or_cloak
+    def host_or_cloak
       elements[1]
     end
   end
@@ -467,7 +467,7 @@ module IrcMessage
         end
         s1 << r4
         if r4
-          r5 = _nt_host_name_or_cloak
+          r5 = _nt_host_or_cloak
           s1 << r5
         end
       end
@@ -515,7 +515,7 @@ module IrcMessage
         end
         s9 << r10
         if r10
-          r11 = _nt_host_name_or_cloak
+          r11 = _nt_host_or_cloak
           s9 << r11
         end
         if s9.last
@@ -576,10 +576,10 @@ module IrcMessage
     r0
   end
 
-  def _nt_host_name_or_cloak
+  def _nt_host_or_cloak
     start_index = index
-    if node_cache[:host_name_or_cloak].has_key?(index)
-      cached = node_cache[:host_name_or_cloak][index]
+    if node_cache[:host_or_cloak].has_key?(index)
+      cached = node_cache[:host_or_cloak][index]
       if cached
         cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
         @index = cached.interval.end
@@ -588,20 +588,410 @@ module IrcMessage
     end
 
     i0 = index
-    r1 = _nt_host_name
+    r1 = _nt_ip_address
     if r1
       r0 = r1
     else
-      r2 = _nt_cloak
+      r2 = _nt_host_name
       if r2
         r0 = r2
+      else
+        r3 = _nt_cloak
+        if r3
+          r0 = r3
+        else
+          @index = i0
+          r0 = nil
+        end
+      end
+    end
+
+    node_cache[:host_or_cloak][start_index] = r0
+
+    r0
+  end
+
+  module IpAddress0
+    def ipv4_part1
+      elements[0]
+    end
+
+    def ipv4_part2
+      elements[2]
+    end
+
+    def ipv4_part3
+      elements[4]
+    end
+
+    def ipv4_part4
+      elements[6]
+    end
+  end
+
+  module IpAddress1
+    def ipv6_part1
+      elements[0]
+    end
+
+    def ipv6_part2
+      elements[2]
+    end
+
+    def ipv6_part3
+      elements[4]
+    end
+
+    def ipv6_part4
+      elements[6]
+    end
+
+    def ipv6_part5
+      elements[8]
+    end
+
+    def ipv6_part6
+      elements[10]
+    end
+
+    def ipv6_part7
+      elements[12]
+    end
+
+    def ipv6_part8
+      elements[14]
+    end
+  end
+
+  def _nt_ip_address
+    start_index = index
+    if node_cache[:ip_address].has_key?(index)
+      cached = node_cache[:ip_address][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0 = index
+    i1, s1 = index, []
+    r2 = _nt_ipv4_part
+    s1 << r2
+    if r2
+      if has_terminal?('.', false, index)
+        r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+        @index += 1
+      else
+        terminal_parse_failure('.')
+        r3 = nil
+      end
+      s1 << r3
+      if r3
+        r4 = _nt_ipv4_part
+        s1 << r4
+        if r4
+          if has_terminal?('.', false, index)
+            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure('.')
+            r5 = nil
+          end
+          s1 << r5
+          if r5
+            r6 = _nt_ipv4_part
+            s1 << r6
+            if r6
+              if has_terminal?('.', false, index)
+                r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                @index += 1
+              else
+                terminal_parse_failure('.')
+                r7 = nil
+              end
+              s1 << r7
+              if r7
+                r8 = _nt_ipv4_part
+                s1 << r8
+              end
+            end
+          end
+        end
+      end
+    end
+    if s1.last
+      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1.extend(IpAddress0)
+    else
+      @index = i1
+      r1 = nil
+    end
+    if r1
+      r0 = r1
+    else
+      i9, s9 = index, []
+      r10 = _nt_ipv6_part
+      s9 << r10
+      if r10
+        if has_terminal?(':', false, index)
+          r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure(':')
+          r11 = nil
+        end
+        s9 << r11
+        if r11
+          r12 = _nt_ipv6_part
+          s9 << r12
+          if r12
+            if has_terminal?(':', false, index)
+              r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure(':')
+              r13 = nil
+            end
+            s9 << r13
+            if r13
+              r14 = _nt_ipv6_part
+              s9 << r14
+              if r14
+                if has_terminal?(':', false, index)
+                  r15 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  @index += 1
+                else
+                  terminal_parse_failure(':')
+                  r15 = nil
+                end
+                s9 << r15
+                if r15
+                  r16 = _nt_ipv6_part
+                  s9 << r16
+                  if r16
+                    if has_terminal?(':', false, index)
+                      r17 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                      @index += 1
+                    else
+                      terminal_parse_failure(':')
+                      r17 = nil
+                    end
+                    s9 << r17
+                    if r17
+                      r18 = _nt_ipv6_part
+                      s9 << r18
+                      if r18
+                        if has_terminal?(':', false, index)
+                          r19 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                          @index += 1
+                        else
+                          terminal_parse_failure(':')
+                          r19 = nil
+                        end
+                        s9 << r19
+                        if r19
+                          r20 = _nt_ipv6_part
+                          s9 << r20
+                          if r20
+                            if has_terminal?(':', false, index)
+                              r21 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                              @index += 1
+                            else
+                              terminal_parse_failure(':')
+                              r21 = nil
+                            end
+                            s9 << r21
+                            if r21
+                              r22 = _nt_ipv6_part
+                              s9 << r22
+                              if r22
+                                if has_terminal?(':', false, index)
+                                  r23 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                                  @index += 1
+                                else
+                                  terminal_parse_failure(':')
+                                  r23 = nil
+                                end
+                                s9 << r23
+                                if r23
+                                  r24 = _nt_ipv6_part
+                                  s9 << r24
+                                end
+                              end
+                            end
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+      if s9.last
+        r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+        r9.extend(IpAddress1)
+      else
+        @index = i9
+        r9 = nil
+      end
+      if r9
+        r0 = r9
       else
         @index = i0
         r0 = nil
       end
     end
 
-    node_cache[:host_name_or_cloak][start_index] = r0
+    node_cache[:ip_address][start_index] = r0
+
+    r0
+  end
+
+  module Ipv4Part0
+  end
+
+  def _nt_ipv4_part
+    start_index = index
+    if node_cache[:ipv4_part].has_key?(index)
+      cached = node_cache[:ipv4_part][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('\G[0-9]', true, index)
+      r1 = true
+      @index += 1
+    else
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      if has_terminal?('\G[0-9]', true, index)
+        r3 = true
+        @index += 1
+      else
+        r3 = nil
+      end
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r2
+      if r2
+        if has_terminal?('\G[0-9]', true, index)
+          r5 = true
+          @index += 1
+        else
+          r5 = nil
+        end
+        if r5
+          r4 = r5
+        else
+          r4 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r4
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Ipv4Part0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:ipv4_part][start_index] = r0
+
+    r0
+  end
+
+  module Ipv6Part0
+  end
+
+  def _nt_ipv6_part
+    start_index = index
+    if node_cache[:ipv6_part].has_key?(index)
+      cached = node_cache[:ipv6_part][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('\G[a-f0-9]', true, index)
+      r2 = true
+      @index += 1
+    else
+      r2 = nil
+    end
+    if r2
+      r1 = r2
+    else
+      r1 = instantiate_node(SyntaxNode,input, index...index)
+    end
+    s0 << r1
+    if r1
+      if has_terminal?('\G[a-f0-9]', true, index)
+        r4 = true
+        @index += 1
+      else
+        r4 = nil
+      end
+      if r4
+        r3 = r4
+      else
+        r3 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r3
+      if r3
+        if has_terminal?('\G[a-f0-9]', true, index)
+          r6 = true
+          @index += 1
+        else
+          r6 = nil
+        end
+        if r6
+          r5 = r6
+        else
+          r5 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r5
+        if r5
+          if has_terminal?('\G[a-f0-9]', true, index)
+            r8 = true
+            @index += 1
+          else
+            r8 = nil
+          end
+          if r8
+            r7 = r8
+          else
+            r7 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s0 << r7
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Ipv6Part0)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:ipv6_part][start_index] = r0
 
     r0
   end
@@ -1045,7 +1435,7 @@ module IrcMessage
       return cached
     end
 
-    if has_terminal?('\G[_\\-\\[\\]\\\\`^{}]', true, index)
+    if has_terminal?('\G[_\\-\\[\\]\\\\`^{}|]', true, index)
       r0 = instantiate_node(SyntaxNode,input, index...(index + 1))
       @index += 1
     else

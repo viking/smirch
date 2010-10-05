@@ -23,7 +23,7 @@ module Smirch
             user_info = node.elements[1]
             if !user_info.empty?
               opts[:user] = user_info.user.text_value
-              opts[:host] = user_info.host_name_or_cloak.text_value
+              opts[:host] = user_info.host_or_cloak.text_value
             end
           end
           @from = Entity.new(node.text_value, opts)

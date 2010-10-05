@@ -259,4 +259,18 @@ class TestIrcMessageParser < Test::Unit::TestCase
     result = parser.parse(message)
     assert result, parser.failure_reason
   end
+
+  def test_ipv6_host
+    message = ":nerdEd!~nerded@2002:45fb:fd91:0:223:6cff:fe84:a8b JOIN :#RubyOnRails"
+    parser = IrcMessageParser.new
+    result = parser.parse(message)
+    assert result, parser.failure_reason
+  end
+
+  def test_weird_nickname
+    message = ":|dgs|!~kvirc@203-97-51-73.dsl.clear.net.nz QUIT :Ping timeout: 265 seconds"
+    parser = IrcMessageParser.new
+    result = parser.parse(message)
+    assert result, parser.failure_reason
+  end
 end

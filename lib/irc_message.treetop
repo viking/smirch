@@ -45,13 +45,13 @@ grammar IrcMessage
   end
 
   rule user_info
-    ('!' user '@' host_name_or_cloak)
+    ('!' user '@' host_or_cloak)
     /
     ('!' user) {
-      def host_name_or_cloak; nil; end
+      def host_or_cloak; nil; end
     }
     /
-    ('@' host_name_or_cloak) {
+    ('@' host_or_cloak) {
       def user; nil; end
     }
   end
@@ -60,8 +60,22 @@ grammar IrcMessage
     [^ \000\r\n@]+
   end
 
-  rule host_name_or_cloak
-    host_name / cloak
+  rule host_or_cloak
+    ip_address / host_name / cloak
+  end
+
+  rule ip_address
+    ( ipv4_part '.' ipv4_part '.' ipv4_part '.' ipv4_part )
+    /
+    ( ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part )
+  end
+
+  rule ipv4_part
+    [0-9] [0-9]? [0-9]?
+  end
+
+  rule ipv6_part
+    [a-f0-9]? [a-f0-9]? [a-f0-9]? [a-f0-9]?
   end
 
   # I don't actually know what the exact format for this is.
@@ -94,7 +108,7 @@ grammar IrcMessage
   end
 
   rule special
-    [_\-\[\]\\`^{}]
+    [_\-\[\]\\`^{}|]
   end
 
   rule alpha
