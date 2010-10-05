@@ -10,6 +10,7 @@ module Smirch
 
   module Events
     import "org.eclipse.swt.events.KeyListener"
+    import "org.eclipse.swt.events.SelectionListener"
   end
 
   module Graphics

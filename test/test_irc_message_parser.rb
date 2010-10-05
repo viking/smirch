@@ -232,6 +232,13 @@ class TestIrcMessageParser < Test::Unit::TestCase
     assert result, parser.failure_reason
   end
 
+  def test_NICK
+    message = %{:roflsaur!~viking@example.com NICK :monkeypants}
+    parser = IrcMessageParser.new
+    result = parser.parse(message)
+    assert result, parser.failure_reason
+  end
+
   def test_RPL_CHANNELMODEIS
     message = %{:hubbard.freenode.net 324 crookshanks #hugetown +ns}
     parser = IrcMessageParser.new

@@ -1,7 +1,7 @@
 module Smirch
   module IrcMessage
     class Base
-      attr_reader :from, :text, :code, :channel
+      attr_reader :from, :to, :text, :code, :channel
 
       def initialize(root)
         @raw = root.text_value

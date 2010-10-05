@@ -2,6 +2,7 @@ module Smirch
   module IrcMessage
     class Entity
       attr_reader :name, :nick, :user, :host
+      attr_writer :me
 
       def initialize(name, opts = {})
         @name = name
@@ -30,6 +31,10 @@ module Smirch
 
       def channel?
         @type == :channel
+      end
+
+      def me?
+        @me
       end
     end
   end

@@ -26,13 +26,15 @@ class TestSmirch
       @color = stub('color')
       @display = stub('display', :read_and_dispatch => false, :sleep => nil, :dispose => nil, :system_color => @color, :timerExec => nil)
       Smirch::Widgets::Display.stubs(:new).returns(@display)
-      @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil, :menu_bar= => nil)
+      @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil, :menu_bar= => nil, :text= => nil)
       @shell.stubs(:disposed?).returns(false, true)
       Smirch::Widgets::Shell.stubs(:new).returns(@shell)
       @grid_layout = stub('grid layout')
       Smirch::Layout::GridLayout.stubs(:new).returns(@grid_layout)
 
-      @tab_folder = stub('tab folder', :layout_data= => nil)
+      @tab_folder_listener = nil
+      @tab_folder = stub('tab folder', :layout_data= => nil, :selection= => nil)
+      @tab_folder.stubs(:add_selection_listener).with { |l| @tab_folder_listener = l; true }  # bleh
       Smirch::Widgets::TabFolder.stubs(:new).returns(@tab_folder)
       @tab_item = stub('tab item', :text= => nil, :control= => nil)
       Smirch::Widgets::TabItem.stubs(:new).returns(@tab_item)
@@ -110,6 +112,7 @@ class TestSmirch
 
     def test_msg_command
       s = Smirch::MainWindow.new
+      s.stubs(:current_chat_box).returns(@chat_box)
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       @client.expects(:privmsg).with('dude', 'hey')
       @chat_box.expects(:append).with(">dude< hey\n")
@@ -119,6 +122,7 @@ class TestSmirch
     def test_msg_requires_connection
       @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
       s = Smirch::MainWindow.new
+      s.stubs(:current_chat_box).returns(@chat_box)
       simulate_input("/msg dude hey")
     end
 
@@ -132,6 +136,7 @@ class TestSmirch
     def test_unknown_command_requires_connection
       @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
       s = Smirch::MainWindow.new
+      s.stubs(:current_chat_box).returns(@chat_box)
       simulate_input("/foo huge bar")
     end
 
@@ -171,6 +176,38 @@ class TestSmirch
       message.expects(:draw).with(parent).in_sequence(run_seq)
       display.expects(:timerExec).with(500, runner)
       runner.run
+    end
+
+    def test_find_tab
+      s = Smirch::MainWindow.new
+      s.stubs(:current_chat_box).returns(@chat_box)
+
+      tab = stub_everything('new tab')
+      Smirch::Widgets::TabItem.stubs(:new).returns(tab)
+      text = stub_everything('new text box')
+      Smirch::Widgets::Text.stubs(:new).returns(text)
+      @tab_folder.expects(:selection=).with(tab)
+
+      s.new_tab('#hugetown')
+      result = s.find_tab('#hugetown')
+      assert_equal tab, result[:tab]
+      assert_equal text, result[:text]
+      assert_equal '#hugetown', result[:name]
+    end
+
+    def test_close_tab
+      s = Smirch::MainWindow.new
+
+      tab = stub_everything('new tab')
+      Smirch::Widgets::TabItem.stubs(:new).returns(tab)
+      text = stub_everything('new text box')
+      Smirch::Widgets::Text.stubs(:new).returns(text)
+
+      s.new_tab('#hugetown')
+      text.expects(:dispose)
+      tab.expects(:dispose)
+      @tab_folder.expects(:selection=).with(0)
+      s.close_tab('#hugetown')
     end
 
     #def test_server_notice_received

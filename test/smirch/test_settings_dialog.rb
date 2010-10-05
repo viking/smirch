@@ -7,7 +7,7 @@ class TestSmirch
       @parent = stub('dialog parent')
       @event = stub('dialog event')
 
-      @shell = stub('dialog window', :pack => nil, :open => nil, :layout= => nil)
+      @shell = stub('dialog window', :pack => nil, :open => nil, :layout= => nil, :text= => nil)
       Smirch::Widgets::Shell.stubs(:new).returns(@shell)
       @layout = stub('grid layout')
       Smirch::Layout::GridLayout.stubs(:new).returns(@layout)
@@ -22,11 +22,9 @@ class TestSmirch
     def test_new_with_no_settings
       Smirch.stubs(:load_config).returns(nil)
 
-      shell = stub('dialog window', :pack => nil, :open => nil)
-      Smirch::Widgets::Shell.expects(:new).with(@parent, instance_of(Fixnum)).returns(shell)
-      layout = stub('grid layout')
-      Smirch::Layout::GridLayout.expects(:new).returns(layout)
-      shell.expects(:layout=).with(layout)
+      Smirch::Widgets::Shell.expects(:new).with(@parent, instance_of(Fixnum)).returns(@shell)
+      Smirch::Layout::GridLayout.expects(:new).returns(@layout)
+      @shell.expects(:layout=).with(@layout)
 
       label_seq = sequence('labels')
       labels = Array.new(5) do |i|
@@ -53,14 +51,14 @@ class TestSmirch
         'server' => 'irc.freenode.net', 'port' => 6666,
         'nick' => 'foobar', 'user' => 'foo', 'real' => 'bar'
       }).in_sequence(save_seq)
-      shell.expects(:close).in_sequence(save_seq)
+      @shell.expects(:close).in_sequence(save_seq)
 
       cancel_button = stub("cancel button", :text= => nil, :layout_data= => nil)
       cancel_button.expects(:add_selection_listener).yields
       Smirch::Widgets::Button.expects(:new).in_sequence(button_seq).returns(cancel_button)
 
       cancel_seq = sequence('canceling')
-      shell.expects(:close).in_sequence(cancel_seq)
+      @shell.expects(:close).in_sequence(cancel_seq)
 
       dialog = Smirch::SettingsDialog.new(@parent, @event)
     end

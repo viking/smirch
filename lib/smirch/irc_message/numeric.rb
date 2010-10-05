@@ -4,6 +4,7 @@ module Smirch
       private
         def setup(command, middle, trailing)
           @code = command.to_i
+          @to = middle[0]
 
           case @code
           when 5, 252, 253, 254

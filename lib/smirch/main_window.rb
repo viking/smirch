@@ -38,8 +38,9 @@ module Smirch
     def initialize
       @display = Widgets::Display.new
       @shell = Widgets::Shell.new(@display)
+      @shell.text = "Smirch"
       @shell.layout = Layout::GridLayout.new(1, true)
-      setup_colors
+      setup_colors_and_fonts
       setup_menu
       setup_tabs
       setup_input
@@ -51,10 +52,23 @@ module Smirch
       chat_box = Widgets::Text.new(@tab_folder, SWT::BORDER | SWT::MULTI | SWT::V_SCROLL | SWT::READ_ONLY)
       chat_box.background = @black
       chat_box.foreground = @white
-      chat_box.font = Graphics::Font.new(@display, "DejaVu Sans Mono", 18, 0)
+      chat_box.font = @font_18
       tab.control = chat_box
-      @tabs << { :name => name, :text => chat_box }
-      @current_chat_box = chat_box
+      @tab_folder.selection = tab
+      @tabs << { :name => name, :text => chat_box, :tab => tab }
+    end
+
+    def find_tab(name)
+      @tabs.find { |t| t[:name] == name }
+    end
+
+    def close_tab(name)
+      index = (0...@tabs.length).find { |i| @tabs[i][:name] == name }
+      tab = @tabs[index]
+      tab[:text].dispose
+      tab[:tab].dispose
+      @tabs.delete_at(index)
+      @tab_folder.selection = index > 0 ? index - 1 : 0
     end
 
     def main_loop
@@ -84,7 +98,7 @@ module Smirch
           require_connection do
             args = predicate.split(/\s+/, 2)
             @client.privmsg(*args)
-            @current_chat_box.append(">#{args[0]}< #{args[1]}\n")
+            current_chat_box.append(">#{args[0]}< #{args[1]}\n")
           end
         else
           require_connection do
@@ -95,9 +109,11 @@ module Smirch
     end
 
     private
-      def setup_colors
+      def setup_colors_and_fonts
         @black = @display.system_color(SWT::COLOR_BLACK)
         @white = @display.system_color(SWT::COLOR_WHITE)
+        @font_15 = Graphics::Font.new(@display, "DejaVu Sans Mono", 15, 0)
+        @font_18 = Graphics::Font.new(@display, "DejaVu Sans Mono", 18, 0)
       end
 
       def setup_menu
@@ -119,6 +135,10 @@ module Smirch
         @tabs = []
         @tab_folder = Widgets::TabFolder.new(@shell, SWT::BORDER | SWT::BOTTOM)
         @tab_folder.layout_data = Layout::GridData.new(Layout::GridData::FILL, Layout::GridData::FILL, true, true)
+        @tab_folder.add_selection_listener(Events::SelectionListener.impl { |name, event|
+          # I'm using impl instead of a block because it's easier to test.  Blame Mocha, and my laziness.
+          @current_chat_box = @tabs[@tab_folder.selected_index][:text]
+        })
         new_tab("Server")
       end
 
@@ -132,7 +152,7 @@ module Smirch
             input_received
           end
         })
-        @input_box.font = Graphics::Font.new(@display, "DejaVu Sans Mono", 15, 0)
+        @input_box.font = @font_15
         @input_box.set_focus
       end
 
@@ -149,7 +169,7 @@ module Smirch
         if @client
           yield
         else
-          @current_chat_box.append("You have to connect to a server first to do that.\n")
+          current_chat_box.append("You have to connect to a server first to do that.\n")
         end
       end
   end

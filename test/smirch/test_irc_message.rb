@@ -512,6 +512,21 @@ class TestSmirch
       assert_equal "Read error: Connection reset by peer", result.text
     end
 
+    def test_NICK
+      message = %{:roflsaur!~viking@example.com NICK :monkeypants}
+      result = Smirch::IrcMessage.parse(message)
+      assert_instance_of Smirch::IrcMessage::Nick, result
+
+      from = result.from
+      assert_equal "roflsaur!~viking@example.com", from.name
+      assert_equal "roflsaur", from.nick
+      assert_equal "~viking", from.user
+      assert_equal "example.com", from.host
+      assert from.client?
+
+      assert_equal "monkeypants", result.text
+    end
+
     ##def test_CTCP
       ##message = %{:frigg!~frigg@freenode/utility-bot/frigg PRIVMSG crookshanks :\001VERSION\001}
       ##parser = Smirch::IrcMessageParser.new

@@ -29,7 +29,11 @@ module Smirch
                 @socket.write_nonblock("PONG\r\n")
               else
                 result = IrcMessage.parse(message)
-                @queue.push(result)
+                if result
+                  # FIXME: this can go away after parser bugs are fixed
+                  result.from.me = (result.from.nick == @nick)
+                  @queue.push(result)
+                end
               end
             end
             break if remaining.empty?

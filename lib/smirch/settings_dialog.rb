@@ -4,8 +4,8 @@ module Smirch
       config = Smirch.load_config
 
       @shell = Widgets::Shell.new(parent, SWT::DIALOG_TRIM | SWT::PRIMARY_MODAL)
-      layout = Layout::GridLayout.new(2, false)
-      @shell.layout = layout
+      @shell.text = "Smirch Settings"
+      @shell.layout = Layout::GridLayout.new(2, false)
 
       server_label = Widgets::Label.new(@shell, SWT::LEFT)
       server_label.text = "Server"
