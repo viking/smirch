@@ -136,8 +136,7 @@ module Smirch
         @tab_folder = Widgets::TabFolder.new(@shell, SWT::BORDER | SWT::BOTTOM)
         @tab_folder.layout_data = Layout::GridData.new(Layout::GridData::FILL, Layout::GridData::FILL, true, true)
         @tab_folder.add_selection_listener(Events::SelectionListener.impl { |name, event|
-          # I'm using impl instead of a block because it's easier to test.  Blame Mocha, and my laziness.
-          @current_chat_box = @tabs[@tab_folder.selected_index][:text]
+          @current_chat_box = @tabs[@tab_folder.selection_index][:text]
         })
         new_tab("Server")
       end

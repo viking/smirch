@@ -2,7 +2,7 @@
 
 grammar IrcMessage
   rule message
-    prefix_expression command params
+    prefix_expression? command params
   end
 
   rule prefix_expression

@@ -4,7 +4,7 @@ module Smirch
       private
         def setup(command, middle, trailing)
           if middle[0] =~ /^#/
-            @channel = middle[0]
+            @channel_name = middle[0]
           end
           @text = trailing
         end

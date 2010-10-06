@@ -6,6 +6,8 @@ class TestSmirch
       super
       @socket = stub('socket', :write => nil)
       TCPSocket.stubs(:new).returns(@socket)
+      #@channel = stub('channel')
+      #Smirch::IrcClient::Channel.stubs(:new).returns(@channel)
       @client = Smirch::IrcClient.new('irc.freenode.net', 6667, 'smirch', 'smirch', 'Smirchy Guy')
     end
 
@@ -83,6 +85,19 @@ class TestSmirch
 
       message_1, message_2 = @client.queue
       assert message_2.from.me?
+    end
+
+    def test_join_starts_tracking_channels
+      @client.connect
+
+      channel = stub('channel')
+      Smirch::IrcClient::Channel.expects(:new).with('#hugetown').returns(channel)
+
+      join = %{:smirch!~smirch@example.com JOIN :#hugetown\r\n}
+      @socket.expects(:read_nonblock).returns(join)
+      @client.poll
+
+      assert_equal channel, @client.channels['#hugetown']
     end
   end
 end

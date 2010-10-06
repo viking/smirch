@@ -273,4 +273,11 @@ class TestIrcMessageParser < Test::Unit::TestCase
     result = parser.parse(message)
     assert result, parser.failure_reason
   end
+
+  def test_PING
+    message = %{PING :gibson.freenode.net}
+    parser = IrcMessageParser.new
+    result = parser.parse(message)
+    assert result, parser.failure_reason
+  end
 end

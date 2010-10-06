@@ -11,10 +11,6 @@ module IrcMessage
   end
 
   module Message0
-    def prefix_expression
-      elements[0]
-    end
-
     def command
       elements[1]
     end
@@ -36,14 +32,19 @@ module IrcMessage
     end
 
     i0, s0 = index, []
-    r1 = _nt_prefix_expression
+    r2 = _nt_prefix_expression
+    if r2
+      r1 = r2
+    else
+      r1 = instantiate_node(SyntaxNode,input, index...index)
+    end
     s0 << r1
     if r1
-      r2 = _nt_command
-      s0 << r2
-      if r2
-        r3 = _nt_params
-        s0 << r3
+      r3 = _nt_command
+      s0 << r3
+      if r3
+        r4 = _nt_params
+        s0 << r4
       end
     end
     if s0.last

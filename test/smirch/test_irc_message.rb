@@ -246,7 +246,7 @@ class TestSmirch
       assert_equal "asimov.freenode.net", from.name
       assert from.server?
 
-      assert_equal "#vim", result.channel
+      assert_equal "#vim", result.channel_name
       assert_equal %{Can't Talk? Get Registered on FreeNode (HOWTO: http://tinyurl.com/27a4cnw) | Vim 7.3.005 http://vim.sf.net | Don't ask to ask! | Before you ask :help, and :helpgrep, and google | SITE: http://vi-improved.org | WIKI: http://vim.wikia.com | FACEBOOK: http://tinyurl.com/vim-facebook | PASTE: http://vim.pastey.net | DONATE: http://www.vim.org/sponsor}, result.text
     end
 
@@ -260,7 +260,7 @@ class TestSmirch
       assert_equal "asimov.freenode.net", from.name
       assert from.server?
 
-      assert_equal '#vim', result.channel
+      assert_equal '#vim', result.channel_name
       assert_equal %{jamessan!~jamessan@debian/developer/jamessan 1284603579}, result.text
     end
 
@@ -274,7 +274,7 @@ class TestSmirch
       assert_equal "asimov.freenode.net", from.name
       assert from.server?
 
-      assert_equal '#vim', result.channel
+      assert_equal '#vim', result.channel_name
       assert_equal %{crookshanks amiri rejb remyo surgeon smeea galaxywatcher daniel_ RomD comand wokka AopicieR mavrc macrobat AkiraYB okayzed azoic gehdan DestinyAwaits viking WebDragon jonathanrwallace ajpiano malkomalko nevans sophacles dv_ agile riq gertidon quake_guy kTT orafu jjardon kojul drio paradigm bryanl threeve arturas pigdude fcuk112 ceej marchino julesa consumerism abstrakt vitiate1 b4d jamur2 tizbac rafab keystr0k hokapoka JohannesSM64 chris_cooke smuf}, result.text
     end
 
@@ -288,7 +288,7 @@ class TestSmirch
       assert_equal "asimov.freenode.net", from.name
       assert from.server?
 
-      assert_equal '#vim', result.channel
+      assert_equal '#vim', result.channel_name
       assert_equal %{End of /NAMES list.}, result.text
     end
 
@@ -302,7 +302,7 @@ class TestSmirch
       assert_equal "services.", from.name
       assert from.server?
 
-      assert_equal '#vim', result.channel
+      assert_equal '#vim', result.channel_name
       assert_equal %{http://vi-improved.org}, result.text
     end
 
@@ -316,7 +316,7 @@ class TestSmirch
       assert_equal "asimov.freenode.net", from.name
       assert from.server?
 
-      assert_equal '#hugetown', result.channel
+      assert_equal '#hugetown', result.channel_name
       assert_equal %{+ns}, result.text
     end
 
@@ -330,7 +330,7 @@ class TestSmirch
       assert_equal "asimov.freenode.net", from.name
       assert from.server?
 
-      assert_equal '#hugetown', result.channel
+      assert_equal '#hugetown', result.channel_name
       assert_equal %{1285777429}, result.text
     end
 
@@ -403,7 +403,7 @@ class TestSmirch
       assert_equal "unitedsoft.ch", from.host
       assert from.client?
 
-      assert_equal "#vim", result.channel
+      assert_equal "#vim", result.channel_name
       assert_equal ":D", result.text
     end
 
@@ -432,7 +432,7 @@ class TestSmirch
       assert_equal "example.com", from.host
       assert from.client?
 
-      assert_equal "#hugetown", result.channel
+      assert_equal "#hugetown", result.channel_name
       assert_equal "+t", result.text
     end
 
@@ -448,7 +448,7 @@ class TestSmirch
       assert_equal "example.com", from.host
       assert from.client?
 
-      assert_equal "#hugetown", result.channel
+      assert_equal "#hugetown", result.channel_name
       assert_equal "-o crookshanks", result.text
     end
 
@@ -464,7 +464,7 @@ class TestSmirch
       assert_equal "89-168-187-13.dynamic.dsl.as9105.com", from.host
       assert from.client?
 
-      assert_equal "#vim", result.channel
+      assert_equal "#vim", result.channel_name
     end
 
     def test_PART
@@ -479,7 +479,7 @@ class TestSmirch
       assert_equal "example.com", from.host
       assert from.client?
 
-      assert_equal '#hugetown', result.channel
+      assert_equal '#hugetown', result.channel_name
     end
 
     def test_PART_with_message
@@ -493,7 +493,7 @@ class TestSmirch
       assert_equal "example.com", from.host
       assert from.client?
 
-      assert_equal '#hugetown', result.channel
+      assert_equal '#hugetown', result.channel_name
       assert_equal %{"Leaving"}, result.text
     end
 
@@ -525,6 +525,14 @@ class TestSmirch
       assert from.client?
 
       assert_equal "monkeypants", result.text
+    end
+
+    def test_PING
+      message = %{PING :gibson.freenode.net}
+      result = Smirch::IrcMessage.parse(message)
+      assert_instance_of Smirch::IrcMessage::Ping, result
+
+      assert_equal "gibson.freenode.net", result.text
     end
 
     ##def test_CTCP
