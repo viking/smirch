@@ -27,7 +27,7 @@ module Smirch
             remaining = messages.pop
             messages.each do |message|
               result = IrcMessage.parse(message)
-              # FIXME: this if-condition go away after parser bugs are fixed
+              # FIXME: this if-condition can go away after parser bugs are fixed
               if result
                 result.from.me = (result.from.nick == @nick)  if result.from
                 result = post_process(result)
@@ -54,6 +54,7 @@ module Smirch
     end
 
     private
+      # FIXME: use hooks instead
       def post_process(message)
         case message
         when IrcMessage::Ping
@@ -62,6 +63,12 @@ module Smirch
         when IrcMessage::Join
           if message.from.me?
             add_channel(message.channel_name)
+          end
+        when IrcMessage::Numeric
+          case message.code
+          when 353
+            channel = @channels[message.channel_name]
+            channel.push(*message.text.split(/\s+/))
           end
         end
         message
