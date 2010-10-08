@@ -36,7 +36,7 @@ module Smirch
 end
 
 require File.dirname(__FILE__) + "/irc_message_parser"
-require File.dirname(__FILE__) + "/smirch/main_window"
+require File.dirname(__FILE__) + "/smirch/application"
 require File.dirname(__FILE__) + "/smirch/settings_dialog"
 require File.dirname(__FILE__) + "/smirch/entity"
 require File.dirname(__FILE__) + "/smirch/irc_message"
