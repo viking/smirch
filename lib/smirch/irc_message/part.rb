@@ -1,11 +1,11 @@
 module Smirch
   module IrcMessage
     class Part < Base
-      def draw(window)
+      def process(app)
         if from.me?
-          window.close_tab(@channel_name)
+          app.close_tab(@channel_name)
         else
-          tab = window.find_tab(@channel_name)
+          tab = app.find_tab(@channel_name)
           tab[:text].append("* %s (%s@%s) left %s\n" % [from.nick, from.user, from.host, @channel_name])
         end
       end

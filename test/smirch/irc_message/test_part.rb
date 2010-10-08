@@ -3,25 +3,25 @@ require 'helper'
 class TestSmirch
   class TestIrcMessage
     class TestPart < Test::Unit::TestCase
-      def test_draw_when_self
-        window = stub('window')
+      def test_process_when_self
+        app = stub('app')
         part = %{:viking!~viking@example.com PART #hugetown}
         message = Smirch::IrcMessage.parse(part)
         message.from.me = true
-        window.expects(:close_tab).with("#hugetown")
-        message.draw(window)
+        app.expects(:close_tab).with("#hugetown")
+        message.process(app)
       end
 
-      def test_draw_when_someone_else
-        window = stub('window')
+      def test_process_when_someone_else
+        app = stub('app')
         part = %{:not_me!~someone_else@example.com PART #hugetown}
         message = Smirch::IrcMessage.parse(part)
         message.from.me = false
 
         text = stub('text box')
-        window.expects(:find_tab).with("#hugetown").returns({:text => text})
+        app.expects(:find_tab).with("#hugetown").returns({:text => text})
         text.expects(:append).with("* not_me (~someone_else@example.com) left #hugetown\n")
-        message.draw(window)
+        message.process(app)
       end
     end
   end

@@ -13,7 +13,7 @@ module Smirch
         queue = @client.queue
         while !queue.empty?
           message = queue.shift
-          message.draw(@parent)
+          message.process(@parent)
         end
         @display.timerExec(500, self)
       end
