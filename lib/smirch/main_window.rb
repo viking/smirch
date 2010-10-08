@@ -1,5 +1,5 @@
 module Smirch
-  class MainWindow
+  class Application
     class PollRunner
       include java.lang.Runnable
 

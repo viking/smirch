@@ -1,7 +1,7 @@
 require 'helper'
 
 class TestSmirch
-  class TestMainWindow < Test::Unit::TestCase
+  class TestApplication < Test::Unit::TestCase
     def stub_text(name = 'text widget', more_stubs = {})
       stub(name, {
         :layout_data= => nil, :background= => nil, :foreground= => nil,
@@ -17,7 +17,7 @@ class TestSmirch
 
     def simulate_received(text)
       @client.stubs(:queue).returns([text])
-      @runner = Smirch::MainWindow::ReceiveRunner.new(@display, @client, @chat_box)
+      @runner = Smirch::Application::ReceiveRunner.new(@display, @client, @chat_box)
       @runner.run
     end
 
@@ -69,7 +69,7 @@ class TestSmirch
       @display.expects(:sleep)
       @display.expects(:dispose)
 
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       s.main_loop
     end
 
@@ -86,24 +86,24 @@ class TestSmirch
       @input_box.expects(:layout_data=).with(@grid_data)
       @input_box.expects(:add_key_listener)
 
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       s.main_loop
     end
 
     def test_server_command
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
 
       Smirch::IrcClient.expects(:new).with('irc.freenode.net', 6666, 'MyNick', 'MyUser', 'Dude guy').returns(@client)
       @client.expects(:connect)
 
       poll_runner = nil
       @display.expects(:timerExec).with do |ms, r|
-        ms == 250 && r.is_a?(Smirch::MainWindow::PollRunner) && poll_runner = r
+        ms == 250 && r.is_a?(Smirch::Application::PollRunner) && poll_runner = r
       end
 
       receive_runner = nil
       @display.expects(:timerExec).with do |ms, r|
-        ms == 500 && r.is_a?(Smirch::MainWindow::ReceiveRunner) && receive_runner = r
+        ms == 500 && r.is_a?(Smirch::Application::ReceiveRunner) && receive_runner = r
       end
 
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
@@ -111,7 +111,7 @@ class TestSmirch
     end
 
     def test_msg_command
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       s.stubs(:current_chat_box).returns(@chat_box)
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       @client.expects(:privmsg).with('dude', 'hey')
@@ -121,13 +121,13 @@ class TestSmirch
 
     def test_msg_requires_connection
       @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       s.stubs(:current_chat_box).returns(@chat_box)
       simulate_input("/msg dude hey")
     end
 
     def test_unknown_command
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       @client.expects(:execute).with('foo', 'huge bar')
       simulate_input("/foo huge bar")
@@ -135,7 +135,7 @@ class TestSmirch
 
     def test_unknown_command_requires_connection
       @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       s.stubs(:current_chat_box).returns(@chat_box)
       simulate_input("/foo huge bar")
     end
@@ -147,7 +147,7 @@ class TestSmirch
       Smirch::IrcClient.expects(:new).with('irc.freenode.net', 6666, 'MyNick', 'MyUser', 'Dude guy').returns(@client)
       @client.expects(:connect)
 
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       simulate_input("/connect")
     end
 
@@ -155,7 +155,7 @@ class TestSmirch
       # test runners; should probably do this elsewhere
       display = stub('display')
       client = stub('client')
-      runner = Smirch::MainWindow::PollRunner.new(display, client)
+      runner = Smirch::Application::PollRunner.new(display, client)
 
       run_seq = sequence('running')
       display.expects(:asyncExec).in_sequence(run_seq).yields
@@ -169,7 +169,7 @@ class TestSmirch
       display = stub('display')
       client = stub('client')
       parent = stub('main window')
-      runner = Smirch::MainWindow::ReceiveRunner.new(display, client, parent)
+      runner = Smirch::Application::ReceiveRunner.new(display, client, parent)
 
       run_seq = sequence('running')
       client.expects(:queue).in_sequence(run_seq).returns([message])
@@ -179,7 +179,7 @@ class TestSmirch
     end
 
     def test_find_tab
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
       s.stubs(:current_chat_box).returns(@chat_box)
 
       tab = stub_everything('new tab')
@@ -196,7 +196,7 @@ class TestSmirch
     end
 
     def test_close_tab
-      s = Smirch::MainWindow.new
+      s = Smirch::Application.new
 
       tab = stub_everything('new tab')
       Smirch::Widgets::TabItem.stubs(:new).returns(tab)
@@ -211,7 +211,7 @@ class TestSmirch
     end
 
     #def test_server_notice_received
-      #s = Smirch::MainWindow.new
+      #s = Smirch::Application.new
       #simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       #@chat_box.expects(:append).with("hey buddy\n")
       #simulate_received(":gibson.freenode.net NOTICE * :hey buddy\r\n")

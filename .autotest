@@ -1,5 +1,5 @@
 Autotest.add_hook(:initialize) do |at|
-  at.testlib = nil
+  at.testlib = 'test/helper.rb'
   def at.reorder(files_to_test)
     files_to_test.sort_by { |k, v| k.count(File::SEPARATOR) }
   end
