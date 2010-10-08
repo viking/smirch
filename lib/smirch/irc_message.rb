@@ -25,6 +25,6 @@ module Smirch
   end
 end
 
-%w{base ctc entity join mode nick numeric part ping quit}.each do |f|
+%w{base ctc join mode nick numeric part ping quit}.each do |f|
   require(File.dirname(__FILE__) + "/irc_message/#{f}")
 end

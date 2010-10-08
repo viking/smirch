@@ -1,4 +1,5 @@
 require 'rubygems'
+gem 'test-unit'
 require 'test/unit'
 require 'mocha'
 require 'pp'
@@ -8,17 +9,6 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'smirch'
 
 class Test::Unit::TestCase
-end
-
-class TestSmirch < Test::Unit::TestCase
-  class TestIrcMessage < Test::Unit::TestCase
-    def test_blah
-      # silly autotest
-    end
-  end
-  def test_blah
-    # silly autotest
-  end
 end
 
 class TCPSocket

@@ -2,11 +2,16 @@ require 'helper'
 
 class TestSmirch
   class TestIrcClient < Test::Unit::TestCase
+    def simulate_received(message)
+      @socket.expects(:read_nonblock).returns(message)
+      @client.poll
+    end
+
     def setup
       super
       @socket = stub('socket', :write => nil)
       TCPSocket.stubs(:new).returns(@socket)
-      @channel = stub('channel')
+      @channel = stub('channel', :push => nil, :delete => nil)
       Smirch::IrcClient::Channel.stubs(:new).returns(@channel)
       @client = Smirch::IrcClient.new('irc.freenode.net', 6667, 'smirch', 'smirch', 'Smirchy Guy')
     end
@@ -20,7 +25,7 @@ class TestSmirch
     end
 
     def test_poll_fills_queue
-      messages = Array.new(4) { |i| stub("irc message #{i}", :from => stub_everything('entity')) }
+      messages = Array.new(4) { |i| stub("irc message #{i}", :from => stub_everything('entity'), :channel_name => nil) }
       data = [%{:gibson.freenode.net NOTICE * :*** Looking up your hostname...}, %{:gibson.freenode.net NOTICE * :*** Checking Ident}, %{:gibson.freenode.net NOTICE * :*** No Ident response}, %{:gibson.freenode.net NOTICE * :*** Couldn't look up your hostname}, ""]
       @socket.expects(:read_nonblock).with(512).returns(data.join("\r\n"))
       4.times { |i| Smirch::IrcMessage.expects(:parse).with(data[i]).returns(messages[i]) }
@@ -39,7 +44,7 @@ class TestSmirch
     def test_poll_lots_of_data
       @client.connect
 
-      Smirch::IrcMessage.stubs(:parse).returns(stub('message', :from => stub_everything('entity')))
+      Smirch::IrcMessage.stubs(:parse).returns(stub('message', :from => stub_everything('entity'), :channel_name => nil))
       message = ""
       100.times { message << ":gibson.freenode.net NOTICE * :hey buddy\r\n" }
       num = (message.length / 512.0).ceil
@@ -75,44 +80,53 @@ class TestSmirch
     def test_me?
       @client.connect
 
-      rpl_welcome = %{:asimov.freenode.net 001 smirch :Welcome to the freenode Internet Relay Chat Network smirch\r\n}
-      @socket.expects(:read_nonblock).returns(rpl_welcome)
-      @client.poll
-
-      join = %{:smirch!~smirch@example.com JOIN :#hugetown\r\n}
-      @socket.expects(:read_nonblock).returns(join)
-      @client.poll
+      simulate_received(%{:asimov.freenode.net 001 smirch :Welcome to the freenode Internet Relay Chat Network smirch\r\n})
+      simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
 
       message_1, message_2 = @client.queue
       assert message_2.from.me?
     end
 
-    def test_join_starts_tracking_channels
+    def test_join_starts_tracking_channel
       @client.connect
 
-      channel = stub('channel')
-      Smirch::IrcClient::Channel.expects(:new).with('#hugetown').returns(channel)
-
-      join = %{:smirch!~smirch@example.com JOIN :#hugetown\r\n}
-      @socket.expects(:read_nonblock).returns(join)
-      @client.poll
-
-      assert_equal channel, @client.channels['#hugetown']
+      Smirch::IrcClient::Channel.expects(:new).with('#hugetown').returns(@channel)
+      simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
+      assert_equal @channel, @client.channels['#hugetown']
     end
 
     def test_tracks_channel_who_reply
       @client.connect
 
-      channel = stub('channel')
-      Smirch::IrcClient::Channel.expects(:new).with('#hugetown').returns(channel)
-      join = %{:smirch!~smirch@example.com JOIN :#hugetown\r\n}
-      @socket.expects(:read_nonblock).returns(join)
-      @client.poll
+      Smirch::IrcClient::Channel.expects(:new).with('#hugetown').returns(@channel)
+      simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
 
-      channel.expects(:push).with(*%w{smirch @dude +buddy guy})
-      who = %{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n}
-      @socket.expects(:read_nonblock).returns(who)
-      @client.poll
+      @channel.expects(:push).with(*%w{smirch @dude +buddy guy})
+      simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
+    end
+
+    def test_tracks_someone_joining_a_channel
+      @client.connect
+      simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
+      simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
+      @channel.expects(:push).with('pal')
+      simulate_received(%{:pal!~pal@example.com JOIN :#hugetown\r\n})
+    end
+
+    def test_tracks_someone_leaving_a_channel
+      @client.connect
+      simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
+      simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
+      @channel.expects(:delete).with('buddy')
+      simulate_received(%{:buddy!~buddy@example.com PART #hugetown\r\n})
+    end
+
+    def test_part_stops_tracking_channel
+      @client.connect
+      simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
+      simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
+      simulate_received(%{:smirch!~smirch@example.com PART #hugetown\r\n})
+      assert_nil @client.channels['#hugetown']
     end
   end
 end

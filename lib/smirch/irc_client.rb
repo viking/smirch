@@ -56,6 +56,7 @@ module Smirch
     private
       # FIXME: use hooks instead
       def post_process(message)
+        channel = message.channel_name ? @channels[message.channel_name] : nil
         case message
         when IrcMessage::Ping
           @socket.write_nonblock("PONG\r\n")
@@ -63,11 +64,18 @@ module Smirch
         when IrcMessage::Join
           if message.from.me?
             add_channel(message.channel_name)
+          else
+            channel.push(message.from.nick)
+          end
+        when IrcMessage::Part
+          if message.from.me?
+            delete_channel(message.channel_name)
+          else
+            channel.delete(message.from.nick)
           end
         when IrcMessage::Numeric
           case message.code
           when 353
-            channel = @channels[message.channel_name]
             channel.push(*message.text.split(/\s+/))
           end
         end
@@ -76,6 +84,10 @@ module Smirch
 
       def add_channel(name)
         @channels[name] = Channel.new(name)
+      end
+
+      def delete_channel(name)
+        @channels.delete(name)
       end
   end
 end
