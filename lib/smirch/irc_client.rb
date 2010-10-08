@@ -18,6 +18,15 @@ module Smirch
       @socket.write("USER #{@user} 0 * :#{@real}\r\n")
     end
 
+    def start_polling
+      @thread = Thread.new { poll; sleep 0.25 }
+    end
+
+    def stop_polling
+      @thread.kill
+      @thread = nil
+    end
+
     def poll
       if @mutex.try_lock
         begin

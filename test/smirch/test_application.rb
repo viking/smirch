@@ -51,7 +51,7 @@ class TestSmirch
       @font = stub_everything("Font object")
       Smirch::Graphics::Font.stubs(:new).returns(@font)
 
-      @client = stub('client', :connect => nil, :queue => [])
+      @client = stub('client', :connect => nil, :start_polling => nil, :queue => [])
       Smirch::IrcClient.stubs(:new).returns(@client)
 
       @menu = stub('menu')
@@ -95,11 +95,7 @@ class TestSmirch
 
       Smirch::IrcClient.expects(:new).with('irc.freenode.net', 6666, 'MyNick', 'MyUser', 'Dude guy').returns(@client)
       @client.expects(:connect)
-
-      poll_runner = nil
-      @display.expects(:timerExec).with do |ms, r|
-        ms == 250 && r.is_a?(Smirch::Application::PollRunner) && poll_runner = r
-      end
+      @client.expects(:start_polling)
 
       receive_runner = nil
       @display.expects(:timerExec).with do |ms, r|
@@ -107,7 +103,7 @@ class TestSmirch
       end
 
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
-      assert_not_nil poll_runner
+      assert_not_nil receive_runner
     end
 
     def test_msg_command
@@ -149,19 +145,6 @@ class TestSmirch
 
       s = Smirch::Application.new
       simulate_input("/connect")
-    end
-
-    def test_poll_runner
-      # test runners; should probably do this elsewhere
-      display = stub('display')
-      client = stub('client')
-      runner = Smirch::Application::PollRunner.new(display, client)
-
-      run_seq = sequence('running')
-      display.expects(:asyncExec).in_sequence(run_seq).yields
-      client.expects(:poll).in_sequence(run_seq)
-      display.expects(:timerExec).with(500, runner)
-      runner.run
     end
 
     def test_receive_runner

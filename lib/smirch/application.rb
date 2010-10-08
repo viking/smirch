@@ -1,19 +1,5 @@
 module Smirch
   class Application
-    class PollRunner
-      include java.lang.Runnable
-
-      def initialize(display, client)
-        @display = display
-        @client = client
-      end
-
-      def run
-        @display.asyncExec { @client.poll }
-        @display.timerExec(500, self)
-      end
-    end
-
     class ReceiveRunner
       include java.lang.Runnable
 
@@ -160,7 +146,7 @@ module Smirch
         @client.connect
 
         # start timers
-        @display.timerExec(250, PollRunner.new(@display, @client))
+        @client.start_polling
         @display.timerExec(500, ReceiveRunner.new(@display, @client, self))
       end
 
