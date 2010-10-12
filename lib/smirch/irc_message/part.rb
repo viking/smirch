@@ -1,7 +1,7 @@
 module Smirch
   module IrcMessage
     class Part < Base
-      def process(app)
+      def process(app, client)
         if from.me?
           app.close_tab(@channel_name)
         else

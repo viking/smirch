@@ -156,7 +156,7 @@ class TestSmirch
 
       run_seq = sequence('running')
       client.expects(:queue).in_sequence(run_seq).returns([message])
-      message.expects(:process).with(parent).in_sequence(run_seq)
+      message.expects(:process).with(parent, client).in_sequence(run_seq)
       display.expects(:timerExec).with(500, runner)
       runner.run
     end

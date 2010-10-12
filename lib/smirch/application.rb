@@ -13,7 +13,7 @@ module Smirch
         queue = @client.queue
         while !queue.empty?
           message = queue.shift
-          message.process(@parent)
+          message.process(@parent, @client)
         end
         @display.timerExec(500, self)
       end
@@ -159,3 +159,5 @@ module Smirch
       end
   end
 end
+
+require File.dirname(__FILE__) + "/application/settings_dialog"

@@ -8,7 +8,7 @@ module Smirch
         common_setup(root)
       end
 
-      def process(app)
+      def process(app, client)
         p @raw
         chat_box = app.current_chat_box
         chat_box.append("#{@text}\n")

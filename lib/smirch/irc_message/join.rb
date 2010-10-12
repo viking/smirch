@@ -1,7 +1,7 @@
 module Smirch
   module IrcMessage
     class Join < Base
-      def process(app)
+      def process(app, client)
         if from.me?
           app.new_tab(@channel_name)
         else
