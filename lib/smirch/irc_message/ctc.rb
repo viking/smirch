@@ -14,6 +14,13 @@ module Smirch
     end
 
     class Privmsg < CTC
+      def process(app, client)
+        if @channel_name
+          app.print("<%s> %s\n" % [from.nick, @text], @channel_name)
+        else
+          super
+        end
+      end
     end
   end
 end

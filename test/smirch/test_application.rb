@@ -193,6 +193,27 @@ class TestSmirch
       s.close_tab('#hugetown')
     end
 
+    def test_print
+      main_tab = stub_everything('main tab')
+      Smirch::Widgets::TabItem.stubs(:new).returns(main_tab)
+      main_text = stub_everything('main text box')
+      Smirch::Widgets::Text.stubs(:new).returns(main_text)
+      s = Smirch::Application.new
+
+      new_tab = stub_everything('new tab')
+      Smirch::Widgets::TabItem.stubs(:new).returns(new_tab)
+      new_text = stub_everything('new text box')
+      Smirch::Widgets::Text.stubs(:new).returns(new_text)
+      s.new_tab('#hugetown')
+
+      s.expects(:current_chat_box).returns(main_text)
+      main_text.expects(:append).with("oh hai\n")
+      s.print("oh hai\n")
+
+      new_text.expects(:append).with("oh hai\n")
+      s.print("oh hai\n", '#hugetown')
+    end
+
     #def test_server_notice_received
       #s = Smirch::Application.new
       #simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")

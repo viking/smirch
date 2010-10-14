@@ -22,9 +22,7 @@ class TestSmirch
         message = Smirch::IrcMessage.parse(part)
         message.from.me = false
 
-        text = stub('text box')
-        @app.expects(:find_tab).with("#hugetown").returns({:text => text})
-        text.expects(:append).with("* not_me (~someone_else@example.com) left #hugetown\n")
+        @app.expects(:print).with("* not_me (~someone_else@example.com) left #hugetown\n", '#hugetown')
         message.process(@app, @client)
       end
     end

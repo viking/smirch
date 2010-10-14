@@ -94,6 +94,11 @@ module Smirch
       end
     end
 
+    def print(str, tab_name = nil)
+      chat_box = tab_name ? find_tab(tab_name)[:text] : current_chat_box
+      chat_box.append(str)
+    end
+
     private
       def setup_colors_and_fonts
         @black = @display.system_color(SWT::COLOR_BLACK)

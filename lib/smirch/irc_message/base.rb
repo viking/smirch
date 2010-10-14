@@ -10,8 +10,7 @@ module Smirch
 
       def process(app, client)
         p @raw
-        chat_box = app.current_chat_box
-        chat_box.append("#{@text}\n")
+        app.print(@raw + "\n")
       end
 
       protected
