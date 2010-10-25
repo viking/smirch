@@ -16,6 +16,13 @@ class TestSmirch
         message.process(@app, @client)
       end
 
+      def test_process_when_server
+        data = %{:gibson.freenode.net NOTICE * :*** Looking up your hostname...}
+        message = Smirch::IrcMessage.parse(data)
+        @app.expects(:print).with("* *** Looking up your hostname...\n", "Server")
+        message.process(@app, @client)
+      end
+
       #def test_process_when_private
         #join = %{:not_me!~someone_else@example.com JOIN :#hugetown}
         #message = Smirch::IrcMessage.parse(join)

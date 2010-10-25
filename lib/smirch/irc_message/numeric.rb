@@ -1,6 +1,10 @@
 module Smirch
   module IrcMessage
     class Numeric < Base
+      def process(app, client)
+        app.print("* #{@text}\n", "Server")
+      end
+
       private
         def setup(command, middle, trailing)
           @code = command.to_i

@@ -11,6 +11,13 @@ module Smirch
     end
 
     class Notice < CTC
+      def process(app, client)
+        if from.server?
+          app.print("* #{@text}\n", 'Server')
+        else
+          super
+        end
+      end
     end
 
     class Privmsg < CTC
