@@ -1,0 +1,26 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    git (1.2.5)
+    jeweler (1.5.2)
+      bundler (~> 1.0.0)
+      git (>= 1.2.5)
+      rake
+    mocha (0.9.12)
+    polyglot (0.3.1)
+    rake (0.8.7)
+    rcov (0.9.9-java)
+    test-unit (2.2.0)
+    treetop (1.4.9)
+      polyglot (>= 0.3.1)
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  bundler (~> 1.0.0)
+  jeweler (~> 1.5.2)
+  mocha
+  rcov
+  test-unit
+  treetop

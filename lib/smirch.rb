@@ -3,7 +3,7 @@ require 'socket'
 require 'treetop'
 require 'yaml'
 require 'etc'
-require File.dirname(__FILE__) + "/swt.jar"
+require File.join(File.dirname(__FILE__), '..', 'javalib', 'swt.jar')
 
 module Smirch
   import "org.eclipse.swt.SWT"

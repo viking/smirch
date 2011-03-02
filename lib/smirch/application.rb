@@ -19,7 +19,7 @@ module Smirch
       end
     end
 
-    attr_reader :current_chat_box
+    attr_reader :current_tab
 
     def initialize
       @display = Widgets::Display.new
@@ -33,26 +33,23 @@ module Smirch
     end
 
     def new_tab(name)
-      tab = Widgets::TabItem.new(@tab_folder, SWT::NONE)
-      tab.text = name
-      chat_box = Widgets::Text.new(@tab_folder, SWT::BORDER | SWT::MULTI | SWT::V_SCROLL | SWT::READ_ONLY)
-      chat_box.background = @black
-      chat_box.foreground = @white
-      chat_box.font = @font_18
-      tab.control = chat_box
-      @tab_folder.selection = tab
-      @tabs << { :name => name, :text => chat_box, :tab => tab }
+      tab = Tab.new(@tab_folder, name, {
+        :background => @black,
+        :foreground => @white,
+        :font => @font_18
+      })
+      @tab_folder.selection = tab.tab_item
+      @tabs << tab
     end
 
     def find_tab(name)
-      @tabs.find { |t| t[:name] == name }
+      @tabs.find { |t| t.name == name }
     end
 
     def close_tab(name)
-      index = (0...@tabs.length).find { |i| @tabs[i][:name] == name }
+      index = (0...@tabs.length).find { |i| @tabs[i].name == name }
       tab = @tabs[index]
-      tab[:text].dispose
-      tab[:tab].dispose
+      tab.dispose
       @tabs.delete_at(index)
       @tab_folder.selection = index > 0 ? index - 1 : 0
     end
@@ -84,7 +81,7 @@ module Smirch
           require_connection do
             args = predicate.split(/\s+/, 2)
             @client.privmsg(*args)
-            current_chat_box.append(">#{args[0]}< #{args[1]}\n")
+            current_tab.chat_box.append(">#{args[0]}< #{args[1]}\n")
           end
         else
           require_connection do
@@ -95,8 +92,8 @@ module Smirch
     end
 
     def print(str, tab_name = nil)
-      chat_box = tab_name ? find_tab(tab_name)[:text] : current_chat_box
-      chat_box.append(str)
+      tab = tab_name ? find_tab(tab_name) : current_tab
+      tab.chat_box.append(str)
     end
 
     private
@@ -127,7 +124,7 @@ module Smirch
         @tab_folder = Widgets::TabFolder.new(@shell, SWT::BORDER | SWT::BOTTOM)
         @tab_folder.layout_data = Layout::GridData.new(Layout::GridData::FILL, Layout::GridData::FILL, true, true)
         @tab_folder.add_selection_listener(Events::SelectionListener.impl { |name, event|
-          @current_chat_box = @tabs[@tab_folder.selection_index][:text]
+          @current_tab = @tabs[@tab_folder.selection_index]
         })
         new_tab("Server")
       end
@@ -159,10 +156,11 @@ module Smirch
         if @client
           yield
         else
-          current_chat_box.append("You have to connect to a server first to do that.\n")
+          current_tab.chat_box.append("You have to connect to a server first to do that.\n")
         end
       end
   end
 end
 
 require File.dirname(__FILE__) + "/application/settings_dialog"
+require File.dirname(__FILE__) + "/application/tab"

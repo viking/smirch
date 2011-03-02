@@ -10,6 +10,16 @@ class TestSmirch
       }.merge(more_stubs))
     end
 
+    def stub_tab(name)
+      tab = stub('smirch application tab', :name => name)
+      Smirch::Application::Tab.stubs(:new).returns(tab)
+      tab_item = stub('tab item')
+      tab.stubs(:tab_item).returns(tab_item)
+      chat_box = stub_text('chat area')
+      tab.stubs(:chat_box).returns(chat_box)
+      [tab, tab_item, chat_box]
+    end
+
     def simulate_input(text)
       @input_box.stubs(:text).returns(text)
       @input_box_listener.keyPressed(stub(:character => Smirch::SWT::CR))
@@ -36,10 +46,8 @@ class TestSmirch
       @tab_folder = stub('tab folder', :layout_data= => nil, :selection= => nil)
       @tab_folder.stubs(:add_selection_listener).with { |l| @tab_folder_listener = l; true }  # bleh
       Smirch::Widgets::TabFolder.stubs(:new).returns(@tab_folder)
-      @tab_item = stub('tab item', :text= => nil, :control= => nil)
-      Smirch::Widgets::TabItem.stubs(:new).returns(@tab_item)
-      @chat_box = stub_text('chat area')
-      Smirch::Widgets::Text.stubs(:new).with(@tab_folder, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
+
+      @tab, @tab_item, @chat_box = stub_tab('Server')
 
       @input_box = stub_text('input box')
       Smirch::Widgets::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
@@ -80,7 +88,7 @@ class TestSmirch
       Smirch::Widgets::TabFolder.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::BOTTOM).returns(@tab_folder)
       @tab_folder.expects(:layout_data=).with(@grid_data)
 
-      Smirch::Widgets::Text.expects(:new).with(@tab_folder, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(@chat_box)
+      Smirch::Application::Tab.expects(:new).with(@tab_folder, 'Server', :background => @color, :foreground => @color, :font => @font).returns(@tab)
 
       Smirch::Widgets::Text.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
       @input_box.expects(:layout_data=).with(@grid_data)
@@ -108,7 +116,7 @@ class TestSmirch
 
     def test_msg_command
       s = Smirch::Application.new
-      s.stubs(:current_chat_box).returns(@chat_box)
+      s.stubs(:current_tab).returns(@tab)
       simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
       @client.expects(:privmsg).with('dude', 'hey')
       @chat_box.expects(:append).with(">dude< hey\n")
@@ -118,7 +126,7 @@ class TestSmirch
     def test_msg_requires_connection
       @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
       s = Smirch::Application.new
-      s.stubs(:current_chat_box).returns(@chat_box)
+      s.stubs(:current_tab).returns(@tab)
       simulate_input("/msg dude hey")
     end
 
@@ -132,7 +140,7 @@ class TestSmirch
     def test_unknown_command_requires_connection
       @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
       s = Smirch::Application.new
-      s.stubs(:current_chat_box).returns(@chat_box)
+      s.stubs(:current_tab).returns(@tab)
       simulate_input("/foo huge bar")
     end
 
@@ -163,54 +171,36 @@ class TestSmirch
 
     def test_find_tab
       s = Smirch::Application.new
-      s.stubs(:current_chat_box).returns(@chat_box)
+      s.stubs(:current_tab).returns(@tab)
 
-      tab = stub_everything('new tab')
-      Smirch::Widgets::TabItem.stubs(:new).returns(tab)
-      text = stub_everything('new text box')
-      Smirch::Widgets::Text.stubs(:new).returns(text)
-      @tab_folder.expects(:selection=).with(tab)
+      tab, tab_item, chat_box = stub_tab('#hugetown')
+      @tab_folder.expects(:selection=).with(tab_item)
 
       s.new_tab('#hugetown')
-      result = s.find_tab('#hugetown')
-      assert_equal tab, result[:tab]
-      assert_equal text, result[:text]
-      assert_equal '#hugetown', result[:name]
+      assert_equal tab, s.find_tab('#hugetown')
     end
 
     def test_close_tab
       s = Smirch::Application.new
-
-      tab = stub_everything('new tab')
-      Smirch::Widgets::TabItem.stubs(:new).returns(tab)
-      text = stub_everything('new text box')
-      Smirch::Widgets::Text.stubs(:new).returns(text)
+      tab, tab_item, chat_box = stub_tab('#hugetown')
 
       s.new_tab('#hugetown')
-      text.expects(:dispose)
       tab.expects(:dispose)
       @tab_folder.expects(:selection=).with(0)
       s.close_tab('#hugetown')
     end
 
     def test_print
-      main_tab = stub_everything('main tab')
-      Smirch::Widgets::TabItem.stubs(:new).returns(main_tab)
-      main_text = stub_everything('main text box')
-      Smirch::Widgets::Text.stubs(:new).returns(main_text)
       s = Smirch::Application.new
 
-      new_tab = stub_everything('new tab')
-      Smirch::Widgets::TabItem.stubs(:new).returns(new_tab)
-      new_text = stub_everything('new text box')
-      Smirch::Widgets::Text.stubs(:new).returns(new_text)
+      new_tab, new_tab_item, new_chat_box = stub_tab('#hugetown')
       s.new_tab('#hugetown')
 
-      s.expects(:current_chat_box).returns(main_text)
-      main_text.expects(:append).with("oh hai\n")
+      s.expects(:current_tab).returns(@tab)
+      @chat_box.expects(:append).with("oh hai\n")
       s.print("oh hai\n")
 
-      new_text.expects(:append).with("oh hai\n")
+      new_chat_box.expects(:append).with("oh hai\n")
       s.print("oh hai\n", '#hugetown')
     end
 

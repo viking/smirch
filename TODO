@@ -1,2 +1,7 @@
+Important:
+  - Need a style class
+    - create via GUI configuration
+    - pass from Application to Tab
+
 Wishlist:
   - View linked images in client
