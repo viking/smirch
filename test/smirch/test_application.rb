@@ -35,7 +35,7 @@ class TestSmirch
       super
       @color = stub('color')
       @display = stub('display', :read_and_dispatch => false, :sleep => nil, :dispose => nil, :system_color => @color, :timerExec => nil)
-      Swt::Widgets::Display.stubs(:new).returns(@display)
+      Swt.stubs(:display).returns(@display)
       @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil, :menu_bar= => nil, :text= => nil)
       @shell.stubs(:disposed?).returns(false, true)
       Swt::Widgets::Shell.stubs(:new).returns(@shell)
@@ -69,7 +69,7 @@ class TestSmirch
     end
 
     def test_window_and_main_loop
-      Swt::Widgets::Display.expects(:new).returns(@display)
+      Swt.expects(:display).returns(@display)
       Swt::Widgets::Shell.expects(:new).with(@display).returns(@shell)
       @shell.expects(:open)
       @shell.expects(:disposed?).twice.returns(false, true)

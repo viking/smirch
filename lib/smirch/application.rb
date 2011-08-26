@@ -22,7 +22,7 @@ module Smirch
     attr_reader :current_tab
 
     def initialize
-      @display = Swt::Widgets::Display.new
+      @display = Swt.display
       @shell = Swt::Widgets::Shell.new(@display)
       @shell.text = "Smirch"
       @shell.layout = Swt::Layout::GridLayout.new(1, true)
