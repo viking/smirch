@@ -8,35 +8,49 @@ module Smirch
         @shell.text = "Smirch Settings"
         @shell.layout = Swt::Layout::GridLayout.new(2, false)
 
+        @inputs = {}
+
         server_label = Swt::Widgets::Label.new(@shell, Swt::SWT::LEFT)
         server_label.text = "Server"
-        @server_input = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
-        @server_input.layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
-        @server_input.text = config['server']   if config
+        @inputs['server'] = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        @inputs['server'].layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
+        @inputs['server'].text = config['server']   if config
 
         port_label = Swt::Widgets::Label.new(@shell, Swt::SWT::LEFT)
         port_label.text = "Port"
-        @port_input = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
-        @port_input.layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
-        @port_input.text = config['port'].to_s   if config
+        @inputs['port'] = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        @inputs['port'].layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
+        @inputs['port'].text = config['port'].to_s   if config
 
         nick_label = Swt::Widgets::Label.new(@shell, Swt::SWT::LEFT)
         nick_label.text = "Nick"
-        @nick_input = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
-        @nick_input.layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
-        @nick_input.text = config['nick']   if config
+        @inputs['nick'] = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        @inputs['nick'].layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
+        @inputs['nick'].text = config['nick']   if config
 
         user_label = Swt::Widgets::Label.new(@shell, Swt::SWT::LEFT)
         user_label.text = "User"
-        @user_input = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
-        @user_input.layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
-        @user_input.text = config['user']   if config
+        @inputs['user'] = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        @inputs['user'].layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
+        @inputs['user'].text = config['user']   if config
 
         real_label = Swt::Widgets::Label.new(@shell, Swt::SWT::LEFT)
         real_label.text = "Real Name"
-        @real_input = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
-        @real_input.layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
-        @real_input.text = config['real']   if config
+        @inputs['real'] = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        @inputs['real'].layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
+        @inputs['real'].text = config['real']   if config
+
+        proxy_host_label = Swt::Widgets::Label.new(@shell, Swt::SWT::LEFT)
+        proxy_host_label.text = "Proxy Host"
+        @inputs['proxy_host'] = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        @inputs['proxy_host'].layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
+        @inputs['proxy_host'].text = config['proxy_host']   if config
+
+        proxy_port_label = Swt::Widgets::Label.new(@shell, Swt::SWT::LEFT)
+        proxy_port_label.text = "Proxy Port"
+        @inputs['proxy_port'] = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        @inputs['proxy_port'].layout_data = Swt::Layout::GridData.new(150, Swt::SWT::DEFAULT)
+        @inputs['proxy_port'].text = config['proxy_port'].to_s   if config
 
         save_button = Swt::Widgets::Button.new(@shell, Swt::SWT::PUSH)
         save_button.text = "Save"
@@ -53,13 +67,14 @@ module Smirch
       end
 
       def save(event)
-        config = {
-          'server' => @server_input.text,
-          'port' => @port_input.text.to_i,
-          'nick' => @nick_input.text,
-          'user' => @user_input.text,
-          'real' => @real_input.text,
-        }
+        config = @inputs.inject({}) do |hsh, (name, input)|
+          val = input.text.empty? ? nil : input.text
+          if (name == 'port' || name == 'proxy_port') && val
+            val = val.to_i
+          end
+          hsh[name] = val
+          hsh
+        end
         Smirch.save_config(config)
         @shell.close
       end

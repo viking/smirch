@@ -13,4 +13,5 @@ group :development do
   gem "rcov", ">= 0"
   gem 'mocha'
   gem 'test-unit'
+  gem 'guard-test'
 end
