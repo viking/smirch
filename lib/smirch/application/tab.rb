@@ -5,9 +5,9 @@ module Smirch
 
       def initialize(parent, name, options)
         @name = name
-        @tab_item = Widgets::TabItem.new(parent, SWT::NONE)
+        @tab_item = Swt::Widgets::TabItem.new(parent, Swt::SWT::NONE)
         @tab_item.text = name
-        @chat_box = Widgets::Text.new(parent, SWT::BORDER | SWT::MULTI | SWT::V_SCROLL | SWT::READ_ONLY)
+        @chat_box = Swt::Widgets::Text.new(parent, Swt::SWT::BORDER | Swt::SWT::MULTI | Swt::SWT::V_SCROLL | Swt::SWT::READ_ONLY)
         @chat_box.background = options[:background]
         @chat_box.foreground = options[:foreground]
         @chat_box.font = options[:font]

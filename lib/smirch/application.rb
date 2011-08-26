@@ -22,10 +22,10 @@ module Smirch
     attr_reader :current_tab
 
     def initialize
-      @display = Widgets::Display.new
-      @shell = Widgets::Shell.new(@display)
+      @display = Swt::Widgets::Display.new
+      @shell = Swt::Widgets::Shell.new(@display)
       @shell.text = "Smirch"
-      @shell.layout = Layout::GridLayout.new(1, true)
+      @shell.layout = Swt::Layout::GridLayout.new(1, true)
       setup_colors_and_fonts
       setup_menu
       setup_tabs
@@ -98,44 +98,44 @@ module Smirch
 
     private
       def setup_colors_and_fonts
-        @black = @display.system_color(SWT::COLOR_BLACK)
-        @white = @display.system_color(SWT::COLOR_WHITE)
-        @font_15 = Graphics::Font.new(@display, "DejaVu Sans Mono", 15, 0)
-        @font_18 = Graphics::Font.new(@display, "DejaVu Sans Mono", 18, 0)
+        @black = @display.system_color(Swt::SWT::COLOR_BLACK)
+        @white = @display.system_color(Swt::SWT::COLOR_WHITE)
+        @font_15 = Swt::Graphics::Font.new(@display, "DejaVu Sans Mono", 15, 0)
+        @font_18 = Swt::Graphics::Font.new(@display, "DejaVu Sans Mono", 18, 0)
       end
 
       def setup_menu
-        menu = Widgets::Menu.new(@shell, SWT::BAR)
+        menu = Swt::Widgets::Menu.new(@shell, Swt::SWT::BAR)
         @shell.menu_bar = menu
-        file_item = Widgets::MenuItem.new(menu, SWT::CASCADE)
+        file_item = Swt::Widgets::MenuItem.new(menu, Swt::SWT::CASCADE)
         file_item.text = "&File"
-        sub_menu = Widgets::Menu.new(@shell, SWT::DROP_DOWN)
+        sub_menu = Swt::Widgets::Menu.new(@shell, Swt::SWT::DROP_DOWN)
         file_item.menu = sub_menu
-        config_item = Widgets::MenuItem.new(sub_menu, SWT::PUSH)
+        config_item = Swt::Widgets::MenuItem.new(sub_menu, Swt::SWT::PUSH)
         config_item.text = "&Settings"
-        config_item.add_listener(SWT::Selection) { |e| SettingsDialog.new(@shell, e) }
-        quit_item = Widgets::MenuItem.new(sub_menu, SWT::PUSH)
+        config_item.add_listener(Swt::SWT::Selection) { |e| SettingsDialog.new(@shell, e) }
+        quit_item = Swt::Widgets::MenuItem.new(sub_menu, Swt::SWT::PUSH)
         quit_item.text = "&Quit"
-        quit_item.add_listener(SWT::Selection) { |e| @shell.close }
+        quit_item.add_listener(Swt::SWT::Selection) { |e| @shell.close }
       end
 
       def setup_tabs
         @tabs = []
-        @tab_folder = Widgets::TabFolder.new(@shell, SWT::BORDER | SWT::BOTTOM)
-        @tab_folder.layout_data = Layout::GridData.new(Layout::GridData::FILL, Layout::GridData::FILL, true, true)
-        @tab_folder.add_selection_listener(Events::SelectionListener.impl { |name, event|
+        @tab_folder = Swt::Widgets::TabFolder.new(@shell, Swt::SWT::BORDER | Swt::SWT::BOTTOM)
+        @tab_folder.layout_data = Swt::Layout::GridData.new(Swt::Layout::GridData::FILL, Swt::Layout::GridData::FILL, true, true)
+        @tab_folder.add_selection_listener do |event|
           @current_tab = @tabs[@tab_folder.selection_index]
-        })
+        end
         new_tab("Server")
       end
 
       def setup_input
-        @input_box = Widgets::Text.new(@shell, SWT::BORDER)
-        grid_data = Layout::GridData.new(Layout::GridData::FILL, Layout::GridData::FILL, true, false)
+        @input_box = Swt::Widgets::Text.new(@shell, Swt::SWT::BORDER)
+        grid_data = Swt::Layout::GridData.new(Swt::Layout::GridData::FILL, Swt::Layout::GridData::FILL, true, false)
         grid_data.heightHint = 25
         @input_box.layout_data = grid_data
-        @input_box.add_key_listener(Events::KeyListener.impl { |name, event|
-          if name == :keyPressed && event.character == SWT::CR
+        @input_box.add_key_listener(Swt::Events::KeyListener.impl { |name, event|
+          if name == :keyPressed && event.character == Swt::SWT::CR
             input_received
           end
         })

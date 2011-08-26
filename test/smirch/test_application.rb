@@ -22,7 +22,7 @@ class TestSmirch
 
     def simulate_input(text)
       @input_box.stubs(:text).returns(text)
-      @input_box_listener.keyPressed(stub(:character => Smirch::SWT::CR))
+      @input_box_listener.keyPressed(stub(:character => Swt::SWT::CR))
     end
 
     def simulate_received(text)
@@ -35,42 +35,42 @@ class TestSmirch
       super
       @color = stub('color')
       @display = stub('display', :read_and_dispatch => false, :sleep => nil, :dispose => nil, :system_color => @color, :timerExec => nil)
-      Smirch::Widgets::Display.stubs(:new).returns(@display)
+      Swt::Widgets::Display.stubs(:new).returns(@display)
       @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil, :menu_bar= => nil, :text= => nil)
       @shell.stubs(:disposed?).returns(false, true)
-      Smirch::Widgets::Shell.stubs(:new).returns(@shell)
+      Swt::Widgets::Shell.stubs(:new).returns(@shell)
       @grid_layout = stub('grid layout')
-      Smirch::Layout::GridLayout.stubs(:new).returns(@grid_layout)
+      Swt::Layout::GridLayout.stubs(:new).returns(@grid_layout)
 
       @tab_folder_listener = nil
       @tab_folder = stub('tab folder', :layout_data= => nil, :selection= => nil)
       @tab_folder.stubs(:add_selection_listener).with { |l| @tab_folder_listener = l; true }  # bleh
-      Smirch::Widgets::TabFolder.stubs(:new).returns(@tab_folder)
+      Swt::Widgets::TabFolder.stubs(:new).returns(@tab_folder)
 
       @tab, @tab_item, @chat_box = stub_tab('Server')
 
       @input_box = stub_text('input box')
-      Smirch::Widgets::Text.stubs(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
+      Swt::Widgets::Text.stubs(:new).with(@shell, Swt::SWT::BORDER).returns(@input_box)
       @input_box.stubs(:add_key_listener).with { |l| @input_box_listener = l; true }
 
       @grid_data = stub_everything("GridData object")
-      Smirch::Layout::GridData.stubs(:new).returns(@grid_data)
+      Swt::Layout::GridData.stubs(:new).returns(@grid_data)
 
       @font = stub_everything("Font object")
-      Smirch::Graphics::Font.stubs(:new).returns(@font)
+      Swt::Graphics::Font.stubs(:new).returns(@font)
 
       @client = stub('client', :connect => nil, :start_polling => nil, :queue => [])
       Smirch::IrcClient.stubs(:new).returns(@client)
 
       @menu = stub('menu')
-      Smirch::Widgets::Menu.stubs(:new).returns(@menu)
+      Swt::Widgets::Menu.stubs(:new).returns(@menu)
       @menu_item = stub('menu item', :text= => nil, :add_listener => nil, :menu= => nil)
-      Smirch::Widgets::MenuItem.stubs(:new).returns(@menu_item)
+      Swt::Widgets::MenuItem.stubs(:new).returns(@menu_item)
     end
 
     def test_window_and_main_loop
-      Smirch::Widgets::Display.expects(:new).returns(@display)
-      Smirch::Widgets::Shell.expects(:new).with(@display).returns(@shell)
+      Swt::Widgets::Display.expects(:new).returns(@display)
+      Swt::Widgets::Shell.expects(:new).with(@display).returns(@shell)
       @shell.expects(:open)
       @shell.expects(:disposed?).twice.returns(false, true)
       @display.expects(:read_and_dispatch).returns(false)
@@ -82,15 +82,15 @@ class TestSmirch
     end
 
     def test_layout
-      Smirch::Layout::GridLayout.expects(:new).with(1, true).returns(@grid_layout)
+      Swt::Layout::GridLayout.expects(:new).with(1, true).returns(@grid_layout)
       @shell.expects(:layout=).with(@grid_layout)
 
-      Smirch::Widgets::TabFolder.expects(:new).with(@shell, Smirch::SWT::BORDER | Smirch::SWT::BOTTOM).returns(@tab_folder)
+      Swt::Widgets::TabFolder.expects(:new).with(@shell, Swt::SWT::BORDER | Swt::SWT::BOTTOM).returns(@tab_folder)
       @tab_folder.expects(:layout_data=).with(@grid_data)
 
       Smirch::Application::Tab.expects(:new).with(@tab_folder, 'Server', :background => @color, :foreground => @color, :font => @font).returns(@tab)
 
-      Smirch::Widgets::Text.expects(:new).with(@shell, Smirch::SWT::BORDER).returns(@input_box)
+      Swt::Widgets::Text.expects(:new).with(@shell, Swt::SWT::BORDER).returns(@input_box)
       @input_box.expects(:layout_data=).with(@grid_data)
       @input_box.expects(:add_key_listener)
 

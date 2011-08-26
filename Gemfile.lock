@@ -10,6 +10,7 @@ GEM
     polyglot (0.3.1)
     rake (0.8.7)
     rcov (0.9.9-java)
+    swt (0.9-java)
     test-unit (2.2.0)
     treetop (1.4.9)
       polyglot (>= 0.3.1)
@@ -22,5 +23,6 @@ DEPENDENCIES
   jeweler (~> 1.5.2)
   mocha
   rcov
+  swt
   test-unit
   treetop

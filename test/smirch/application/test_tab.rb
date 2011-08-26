@@ -12,17 +12,17 @@ class TestSmirch
 
         # default cases
         @tab_item = stub_everything('tab item')
-        Smirch::Widgets::TabItem.stubs(:new).returns(@tab_item)
+        Swt::Widgets::TabItem.stubs(:new).returns(@tab_item)
         @chat_box = stub_everything('chat box')
-        Smirch::Widgets::Text.stubs(:new).returns(@chat_box)
+        Swt::Widgets::Text.stubs(:new).returns(@chat_box)
       end
 
       def test_new
         tab_item = mock('tab item')
         tab_item.expects(:text=).with('foo')
-        Smirch::Widgets::TabItem.expects(:new).with(@tab_folder, Smirch::SWT::NONE).returns(tab_item)
+        Swt::Widgets::TabItem.expects(:new).with(@tab_folder, Swt::SWT::NONE).returns(tab_item)
         chat_box = mock('chat box')
-        Smirch::Widgets::Text.expects(:new).with(@tab_folder, Smirch::SWT::BORDER | Smirch::SWT::MULTI | Smirch::SWT::READ_ONLY | Smirch::SWT::V_SCROLL).returns(chat_box)
+        Swt::Widgets::Text.expects(:new).with(@tab_folder, Swt::SWT::BORDER | Swt::SWT::MULTI | Swt::SWT::READ_ONLY | Swt::SWT::V_SCROLL).returns(chat_box)
         chat_box.expects(:background=).with(@black)
         chat_box.expects(:foreground=).with(@white)
         chat_box.expects(:font=).with(@font)
