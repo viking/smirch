@@ -17,6 +17,7 @@ class TestSmirch
       Swt::Widgets::Button.stubs(:new).returns(@button)
       @grid_data = stub('grid data')
       Swt::Layout::GridData.stubs(:new).returns(@grid_data)
+      Smirch.stubs(:load_config).returns(nil)
     end
 
     def test_new_with_no_settings

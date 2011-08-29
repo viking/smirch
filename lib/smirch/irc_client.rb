@@ -1,21 +1,27 @@
 module Smirch
   class IrcClient
     attr_reader :queue, :channels
-    def initialize(host, port, nick, user, real)
-      @host = host
-      @port = port
-      @nick = nick
-      @user = user
-      @real = real
+    def initialize(options)
+      @options = options
       @channels = {}
       @queue = []
       @mutex = Mutex.new
     end
 
-    def connect
-      @socket = TCPSocket.new(@host, @port)
-      @socket.write("NICK #{@nick}\r\n")
-      @socket.write("USER #{@user} 0 * :#{@real}\r\n")
+    def connect(&block)
+      if @options['proxy_host']
+        host = TCPSocket::SOCKSConnectionPeerAddress.new(@options['proxy_host'], @options['proxy_port'], @options['server'])
+      else
+        host = @options['server']
+      end
+      @socket = TCPSocket.new(host, @options['port'])
+      block.call if block
+      connected
+    end
+
+    def connected
+      @socket.write("NICK #{@options['nick']}\r\n")
+      @socket.write("USER #{@options['user']} 0 * :#{@options['real']}\r\n")
     end
 
     def start_polling
@@ -38,7 +44,7 @@ module Smirch
               message = IrcMessage.parse(raw_message)
               # FIXME: this if-condition can go away after parser bugs are fixed
               if message
-                message.from.me = (message.from.nick == @nick)  if message.from
+                message.from.me = (message.from.nick == @options['nick'])  if message.from
                 @queue.push(message)
               end
             end

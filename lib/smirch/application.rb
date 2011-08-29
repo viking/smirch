@@ -15,7 +15,7 @@ module Smirch
           message = queue.shift
           message.process(@parent, @client)
         end
-        @display.timerExec(500, self)
+        @display.timer_exec(500, self)
       end
     end
 
@@ -40,6 +40,7 @@ module Smirch
       })
       @tab_folder.selection = tab.tab_item
       @tabs << tab
+      tab
     end
 
     def find_tab(name)
@@ -72,11 +73,17 @@ module Smirch
         case command
         when "/connect"
           config = Smirch.load_config
-          setup_client(config.values_at('server', 'port', 'nick', 'user', 'real'))
+          setup_client(config)
         when "/server"
           args = predicate.split(/\s+/, 5)
           args[1] = args[1].to_i
-          setup_client(args)
+          setup_client({
+            'server' => args[0],
+            'port' => args[1],
+            'nick' => args[2],
+            'user' => args[3],
+            'real' => args[4]
+          })
         when "/msg"
           require_connection do
             args = predicate.split(/\s+/, 2)
@@ -126,7 +133,7 @@ module Smirch
         @tab_folder.add_selection_listener do |event|
           @current_tab = @tabs[@tab_folder.selection_index]
         end
-        new_tab("Server")
+        @current_tab = new_tab("Server")
       end
 
       def setup_input
@@ -143,13 +150,18 @@ module Smirch
         @input_box.set_focus
       end
 
-      def setup_client(args)
-        @client = IrcClient.new(*args)
-        @client.connect
+      def setup_client(options)
+        current_tab.chat_box.append("Connecting...\n")
+        @client = IrcClient.new(options)
+        @display.async_exec do
+          @client.connect do
+            current_tab.chat_box.append("Connected!\n")
 
-        # start timers
-        @client.start_polling
-        @display.timerExec(500, ReceiveRunner.new(@display, @client, self))
+            # start timers
+            @client.start_polling
+            @display.timer_exec(500, ReceiveRunner.new(@display, @client, self))
+          end
+        end
       end
 
       def require_connection

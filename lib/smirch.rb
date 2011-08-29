@@ -4,6 +4,7 @@ require 'treetop'
 require 'yaml'
 require 'etc'
 require 'swt'
+require 'socksify'
 
 module Smirch
   def self.load_config
@@ -15,6 +16,9 @@ module Smirch
     File.open(File.join(Etc.getpwuid.dir, '.smirchrc'), 'w') { |f| f.write(hash.to_yaml) }
   end
 end
+
+Socksify.debug = true
+Thread.abort_on_exception = true
 
 require File.dirname(__FILE__) + "/irc_message_parser"
 require File.dirname(__FILE__) + "/smirch/application"

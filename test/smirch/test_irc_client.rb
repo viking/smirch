@@ -2,20 +2,30 @@ require 'helper'
 
 class TestSmirch
   class TestIrcClient < Test::Unit::TestCase
-    def simulate_received(message)
+    def simulate_received(client, message)
       @socket.expects(:read_nonblock).returns(message)
-      @client.poll
+      client.poll
     end
 
     def stub_message(name)
       stub(name, :from => stub_everything('entity'), :channel_name => nil)
     end
 
+    def new_client(options = {})
+      Smirch::IrcClient.new({
+        'server' => 'irc.freenode.net',
+        'port' => 6667,
+        'nick' => 'smirch',
+        'user' => 'smirch',
+        'real' => 'Smirchy Guy'
+      }.merge(options))
+    end
+
     def setup
       super
       @socket = stub('socket', :write => nil)
       TCPSocket.stubs(:new).returns(@socket)
-      @client = Smirch::IrcClient.new('irc.freenode.net', 6667, 'smirch', 'smirch', 'Smirchy Guy')
+      Thread.stubs(:new).yields
     end
 
     def test_connect
@@ -23,7 +33,23 @@ class TestSmirch
       seq = sequence("connection registration")
       @socket.expects(:write).with("NICK smirch\r\n").in_sequence(seq)
       @socket.expects(:write).with("USER smirch 0 * :Smirchy Guy\r\n")
-      @client.connect
+
+      new_client.connect
+    end
+
+    def test_connect_with_proxy
+      client = new_client('proxy_host' => 'localhost', 'proxy_port' => 12345)
+
+      peer_address = stub('peer address')
+      TCPSocket::SOCKSConnectionPeerAddress.expects(:new).with('localhost', 12345, 'irc.freenode.net').returns(peer_address)
+      TCPSocket.expects(:new).with(peer_address, 6667).returns(@socket)
+      client.connect
+    end
+
+    def test_connect_yield_when_connected
+      ran = false
+      new_client.connect { ran = true }
+      assert ran
     end
 
     def test_poll_fills_queue
@@ -32,19 +58,22 @@ class TestSmirch
       @socket.expects(:read_nonblock).with(512).returns(data.join("\r\n"))
       4.times { |i| Smirch::IrcMessage.expects(:parse).with(data[i]).returns(messages[i]) }
 
-      @client.connect
-      @client.poll
-      assert_equal messages, @client.queue
+      client = new_client
+      client.connect
+      client.poll
+      assert_equal messages, client.queue
     end
 
     def test_poll_no_data
-      @client.connect
+      client = new_client
+      client.connect
       @socket.expects(:read_nonblock).with(512).raises(Errno::EAGAIN)
-      @client.poll
+      client.poll
     end
 
     def test_poll_lots_of_data
-      @client.connect
+      client = new_client
+      client.connect
 
       Smirch::IrcMessage.stubs(:parse).returns(stub_message('message'))
       message = ""
@@ -53,8 +82,8 @@ class TestSmirch
       chunks = []
       num.times { |i| chunks << message[(i*512)..((i+1)*512-1)] }
       @socket.expects(:read_nonblock).with(512).times(num).returns(*chunks)
-      @client.poll
-      assert_equal 100, @client.queue.length
+      client.poll
+      assert_equal 100, client.queue.length
     end
 
     #def test_ping
@@ -68,24 +97,27 @@ class TestSmirch
     #end
 
     def test_privmsg
-      @client.connect
+      client = new_client
+      client.connect
       @socket.expects(:write_nonblock).with("PRIVMSG dude :hey buddy\r\n")
-      @client.privmsg('dude', 'hey buddy')
+      client.privmsg('dude', 'hey buddy')
     end
 
     def test_execute
-      @client.connect
+      client = new_client
+      client.connect
       @socket.expects(:write_nonblock).with("FOO huge bar\r\n")
-      @client.execute('foo', 'huge bar')
+      client.execute('foo', 'huge bar')
     end
 
     def test_me?
-      @client.connect
+      client = new_client
+      client.connect
 
-      simulate_received(%{:asimov.freenode.net 001 smirch :Welcome to the freenode Internet Relay Chat Network smirch\r\n})
-      simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
+      simulate_received(client, %{:asimov.freenode.net 001 smirch :Welcome to the freenode Internet Relay Chat Network smirch\r\n})
+      simulate_received(client, %{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
 
-      message_1, message_2 = @client.queue
+      message_1, message_2 = client.queue
       assert message_2.from.me?
     end
 

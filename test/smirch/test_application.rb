@@ -34,7 +34,9 @@ class TestSmirch
     def setup
       super
       @color = stub('color')
-      @display = stub('display', :read_and_dispatch => false, :sleep => nil, :dispose => nil, :system_color => @color, :timerExec => nil)
+      @display = stub('display', :read_and_dispatch => false, :sleep => nil, :dispose => nil, :system_color => @color, :timer_exec => nil) do
+        stubs(:async_exec).yields
+      end
       Swt.stubs(:display).returns(@display)
       @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil, :menu_bar= => nil, :text= => nil)
       @shell.stubs(:disposed?).returns(false, true)
@@ -101,12 +103,19 @@ class TestSmirch
     def test_server_command
       s = Smirch::Application.new
 
-      Smirch::IrcClient.expects(:new).with('irc.freenode.net', 6666, 'MyNick', 'MyUser', 'Dude guy').returns(@client)
-      @client.expects(:connect)
+      Smirch::IrcClient.expects(:new).with({
+        'server' => 'irc.freenode.net', 
+        'port' => 6666,
+        'nick' => 'MyNick',
+        'user' => 'MyUser',
+        'real' => 'Dude guy'
+      }).returns(@client)
+      @display.expects(:async_exec).yields
+      @client.expects(:connect).yields
       @client.expects(:start_polling)
 
       receive_runner = nil
-      @display.expects(:timerExec).with do |ms, r|
+      @display.expects(:timer_exec).with do |ms, r|
         ms == 500 && r.is_a?(Smirch::Application::ReceiveRunner) && receive_runner = r
       end
 
@@ -147,11 +156,22 @@ class TestSmirch
     def test_connect
       config = {'server' => 'irc.freenode.net', 'port' => 6666, 'nick' => 'MyNick', 'user' => 'MyUser', 'real' => 'Dude guy'}
       Smirch.expects(:load_config).returns(config)
-
-      Smirch::IrcClient.expects(:new).with('irc.freenode.net', 6666, 'MyNick', 'MyUser', 'Dude guy').returns(@client)
-      @client.expects(:connect)
-
       s = Smirch::Application.new
+      s.stubs(:current_tab).returns(@tab)
+
+      seq = sequence('connecting')
+      @chat_box.expects(:append).with("Connecting...\n").in_sequence(seq)
+      Smirch::IrcClient.expects(:new).with({
+        'server' => 'irc.freenode.net', 
+        'port' => 6666, 
+        'nick' => 'MyNick',
+        'user' => 'MyUser',
+        'real' => 'Dude guy'
+      }).returns(@client)
+      @display.expects(:async_exec).yields.in_sequence(seq)
+      @client.expects(:connect).yields.in_sequence(seq)
+      @chat_box.expects(:append).with("Connected!\n").in_sequence(seq)
+
       simulate_input("/connect")
     end
 
@@ -165,7 +185,7 @@ class TestSmirch
       run_seq = sequence('running')
       client.expects(:queue).in_sequence(run_seq).returns([message])
       message.expects(:process).with(parent, client).in_sequence(run_seq)
-      display.expects(:timerExec).with(500, runner)
+      display.expects(:timer_exec).with(500, runner)
       runner.run
     end
 

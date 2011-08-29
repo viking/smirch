@@ -15,6 +15,7 @@ GEM
     polyglot (0.3.1)
     rake (0.8.7)
     rcov (0.9.9-java)
+    socksify (1.4.1)
     swt (0.9-java)
     test-unit (2.2.0)
     thor (0.14.6)
@@ -30,6 +31,7 @@ DEPENDENCIES
   jeweler (~> 1.5.2)
   mocha
   rcov
+  socksify
   swt
   test-unit
   treetop
