@@ -2,7 +2,7 @@ require 'helper'
 require 'tmpdir'
 require 'fileutils'
 
-class TestSmirch
+class UnitTests::TestSmirch < Test::Unit::TestCase
   def setup
     super
     @pwuid = stub(:dir => "/foo/bar")

@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestIrcMessageParser < Test::Unit::TestCase
+class UnitTests::TestIrcMessageParser < Test::Unit::TestCase
   def test_NOTICE_from_server
     message = ":gibson.freenode.net NOTICE * :*** Looking up your hostname..."
     parser = IrcMessageParser.new
