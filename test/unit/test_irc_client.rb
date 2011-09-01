@@ -85,15 +85,16 @@ class UnitTests::TestIrcClient < Test::Unit::TestCase
     assert_equal 100, client.queue.length
   end
 
-  #def test_ping
-    #@client.connect
+  def test_ping
+    client = new_client
+    client.connect
 
-    #message = %{PING :gibson.freenode.net\r\n}
-    #@socket.expects(:read_nonblock).with(512).returns(message)
-    #@socket.expects(:write_nonblock).with("PONG\r\n")
-    #@client.poll
-    #assert @client.queue.empty?, @client.queue.inspect
-  #end
+    message = %{PING :gibson.freenode.net\r\n}
+    @socket.expects(:read_nonblock).with(512).returns(message)
+    @socket.expects(:write_nonblock).with("PONG\r\n")
+    client.poll
+    assert client.queue.empty?, client.queue.inspect
+  end
 
   def test_privmsg
     client = new_client

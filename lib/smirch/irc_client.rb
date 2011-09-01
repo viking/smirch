@@ -34,16 +34,22 @@ module Smirch
     end
 
     def poll
+      print "Client polling..."
       if @mutex.try_lock
         begin
           data = @socket.read_nonblock(512)
+          puts data.inspect
           loop do
             raw_messages = data.split(/\r\n/, -1)
             remaining = raw_messages.pop
             raw_messages.each do |raw_message|
               message = IrcMessage.parse(raw_message)
-              # FIXME: this if-condition can go away after parser bugs are fixed
-              if message
+              case message
+              when nil
+                # FIXME: this condition can go away after parser bugs are fixed
+              when IrcMessage::Ping
+                execute("PONG")
+              else
                 message.from.me = (message.from.nick == @options['nick'])  if message.from
                 @queue.push(message)
               end
@@ -53,6 +59,7 @@ module Smirch
           end
         rescue Errno::EAGAIN
           # no data
+          puts "Nothing."
         ensure
           @mutex.unlock
         end

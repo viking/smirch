@@ -7,20 +7,20 @@ class UnitTests::TestPart < Test::Unit::TestCase
     @client = stub('client')
   end
 
-  def test_process_when_self
+  test "to_s when I leave a channel" do
     part = %{:viking!~viking@example.com PART #hugetown}
     message = Smirch::IrcMessage.parse(part)
     message.from.me = true
-    @app.expects(:close_tab).with("#hugetown")
-    message.process(@app, @client)
+    assert_equal "#hugetown", message.channel_name
+    assert_equal "", message.to_s
   end
 
-  def test_process_when_someone_else
+  test "to_s when someone else leaves a channel" do
     part = %{:not_me!~someone_else@example.com PART #hugetown}
     message = Smirch::IrcMessage.parse(part)
     message.from.me = false
 
-    @app.expects(:print).with("* not_me (~someone_else@example.com) left #hugetown\n", '#hugetown')
-    message.process(@app, @client)
+    assert_equal "#hugetown", message.channel_name
+    assert_equal "* not_me (~someone_else@example.com) left #hugetown", message.to_s
   end
 end

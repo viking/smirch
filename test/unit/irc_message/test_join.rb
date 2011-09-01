@@ -1,26 +1,19 @@
 require 'helper'
 
 class UnitTests::TestJoin < Test::Unit::TestCase
-  def setup
-    super
-    @app = stub('app')
-    @client = stub('client')
-  end
-
-  def test_process_when_self
+  test "to_s when I join a channel" do
     join = %{:smirch!~smirch@example.com JOIN :#hugetown}
     message = Smirch::IrcMessage.parse(join)
     message.from.me = true
-    @app.expects(:new_tab).with("#hugetown")
-    message.process(@app, @client)
+    assert_equal "#hugetown", message.channel_name
+    assert_equal "", message.to_s
   end
 
-  def test_process_when_someone_else
+  test "to_s when someone else joined a channel" do
     join = %{:not_me!~someone_else@example.com JOIN :#hugetown}
     message = Smirch::IrcMessage.parse(join)
     message.from.me = false
-
-    @app.expects(:print).with("* not_me (~someone_else@example.com) joined #hugetown\n", "#hugetown")
-    message.process(@app, @client)
+    assert_equal "#hugetown", message.channel_name
+    assert_equal "* not_me (~someone_else@example.com) joined #hugetown", message.to_s
   end
 end

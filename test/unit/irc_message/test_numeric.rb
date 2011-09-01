@@ -7,10 +7,9 @@ class UnitTests::TestNumeric < Test::Unit::TestCase
     @client = stub('client')
   end
 
-  def test_process_prints_to_server_tab
+  test "to_s" do
     data = %{:asimov.freenode.net 001 crookshanks :Welcome to the freenode Internet Relay Chat Network crookshanks}
     message = Smirch::IrcMessage.parse(data)
-    @app.expects(:print).with("* Welcome to the freenode Internet Relay Chat Network crookshanks\n", "Server")
-    message.process(@app, @client)
+    assert_equal "* Welcome to the freenode Internet Relay Chat Network crookshanks", message.to_s
   end
 end

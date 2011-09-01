@@ -36,6 +36,29 @@ module Smirch
             current_tab.chat_box.append(">#{args[0]}< #{args[1]}\n")
           when :connection_required
             current_tab.chat_box.append("You have to connect to a server first to do that.\n")
+          when :message_received
+            message = args[0]
+            case message
+            when IrcMessage::Join
+              if message.from.me?
+                new_tab(message.channel_name)
+              else
+                print(message.to_s, message.channel_name)
+              end
+            when IrcMessage::Part
+              if message.from.me?
+                close_tab(message.channel_name)
+              else
+                print(message.to_s, message.channel_name)
+              end
+            else
+              if message.channel_name
+                print(message.to_s, message.channel_name)
+              #elsif message.from.server?
+              else
+                print(message.to_s, 'Server')
+              end
+            end
           end
         end
       end
@@ -65,7 +88,7 @@ module Smirch
 
       def print(str, tab_name = nil)
         tab = tab_name ? find_tab(tab_name) : current_tab
-        tab.chat_box.append(str)
+        tab.chat_box.append(str + "\n")
       end
 
       private

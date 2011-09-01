@@ -1,11 +1,11 @@
 module Smirch
   module IrcMessage
     class Part < Base
-      def process(app, client)
+      def to_s
         if from.me?
-          app.close_tab(@channel_name)
+          ""
         else
-          app.print("* %s (%s@%s) left %s\n" % [from.nick, from.user, from.host, @channel_name], @channel_name)
+          "* %s (%s@%s) left %s" % [from.nick, from.user, from.host, @channel_name]
         end
       end
 

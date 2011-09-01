@@ -11,9 +11,9 @@ module Smirch
     end
 
     class Notice < CTC
-      def process(app, client)
+      def to_s
         if from.server?
-          app.print("* #{@text}\n", 'Server')
+          "* #{@text}"
         else
           super
         end
@@ -21,9 +21,9 @@ module Smirch
     end
 
     class Privmsg < CTC
-      def process(app, client)
+      def to_s
         if @channel_name
-          app.print("<%s> %s\n" % [from.nick, @text], @channel_name)
+          "<%s> %s" % [from.nick, @text]
         else
           super
         end

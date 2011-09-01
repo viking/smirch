@@ -51,8 +51,11 @@ module Smirch
           @gui.update(:client_connected)
           @client.start_polling
           @check_message_thread = Thread.new do
-            check_client_for_messages
-            sleep 0.5
+            loop do
+              puts "Checking for messages..."
+              check_client_for_messages
+              sleep 0.5
+            end
           end
         end
       end
@@ -62,7 +65,8 @@ module Smirch
       queue = @client.queue
       while !queue.empty?
         message = queue.shift
-        message.process(self, @client)
+        @gui.update(:message_received, message)
+        #message.process(self, @client)
       end
     end
 

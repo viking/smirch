@@ -8,9 +8,8 @@ module Smirch
         common_setup(root)
       end
 
-      def process(app, client)
-        p @raw
-        app.print(@raw + "\n")
+      def to_s
+        @raw
       end
 
       protected
