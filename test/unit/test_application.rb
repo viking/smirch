@@ -1,232 +1,98 @@
 require 'helper'
 
 class UnitTests::TestApplication < Test::Unit::TestCase
-  def stub_text(name = 'text widget', more_stubs = {})
-    stub(name, {
-      :layout_data= => nil, :background= => nil, :foreground= => nil,
-      :text => 'foo', :text= => nil, :font= => nil, :append => nil,
-      :set_focus => nil
-    }.merge(more_stubs))
-  end
-
-  def stub_tab(name)
-    tab = stub('smirch application tab', :name => name)
-    Smirch::Application::Tab.stubs(:new).returns(tab)
-    tab_item = stub('tab item')
-    tab.stubs(:tab_item).returns(tab_item)
-    chat_box = stub_text('chat area')
-    tab.stubs(:chat_box).returns(chat_box)
-    [tab, tab_item, chat_box]
-  end
-
-  def simulate_input(text)
-    @input_box.stubs(:text).returns(text)
-    @input_box_listener.keyPressed(stub(:character => Swt::SWT::CR))
-  end
-
-  def simulate_received(text)
-    @client.stubs(:queue).returns([text])
-    @runner = Smirch::Application::ReceiveRunner.new(@display, @client, @chat_box)
-    @runner.run
-  end
-
   def setup
-    super
-    @color = stub('color')
-    @display = stub('display', :read_and_dispatch => false, :sleep => nil, :dispose => nil, :system_color => @color, :timer_exec => nil) do
-      stubs(:async_exec).yields
-    end
-    Swt.stubs(:display).returns(@display)
-    @shell = stub('shell', :open => nil, :layout= => nil, :pack => nil, :menu_bar= => nil, :text= => nil)
-    @shell.stubs(:disposed?).returns(false, true)
-    Swt::Widgets::Shell.stubs(:new).returns(@shell)
-    @grid_layout = stub('grid layout')
-    Swt::Layout::GridLayout.stubs(:new).returns(@grid_layout)
-
-    @tab_folder_listener = nil
-    @tab_folder = stub('tab folder', :layout_data= => nil, :selection= => nil)
-    @tab_folder.stubs(:add_selection_listener).with { |l| @tab_folder_listener = l; true }  # bleh
-    Swt::Widgets::TabFolder.stubs(:new).returns(@tab_folder)
-
-    @tab, @tab_item, @chat_box = stub_tab('Server')
-
-    @input_box = stub_text('input box')
-    Swt::Widgets::Text.stubs(:new).with(@shell, Swt::SWT::BORDER).returns(@input_box)
-    @input_box.stubs(:add_key_listener).with { |l| @input_box_listener = l; true }
-
-    @grid_data = stub_everything("GridData object")
-    Swt::Layout::GridData.stubs(:new).returns(@grid_data)
-
-    @font = stub_everything("Font object")
-    Swt::Graphics::Font.stubs(:new).returns(@font)
-
+    @gui = stub('swt gui', :update => nil)
+    Smirch::GUI::Swt.stubs(:new).returns(@gui)
     @client = stub('client', :connect => nil, :start_polling => nil, :queue => [])
     Smirch::IrcClient.stubs(:new).returns(@client)
-
-    @menu = stub('menu')
-    Swt::Widgets::Menu.stubs(:new).returns(@menu)
-    @menu_item = stub('menu item', :text= => nil, :add_listener => nil, :menu= => nil)
-    Swt::Widgets::MenuItem.stubs(:new).returns(@menu_item)
   end
 
-  def test_window_and_main_loop
-    Swt.expects(:display).returns(@display)
-    Swt::Widgets::Shell.expects(:new).with(@display).returns(@shell)
-    @shell.expects(:open)
-    @shell.expects(:disposed?).twice.returns(false, true)
-    @display.expects(:read_and_dispatch).returns(false)
-    @display.expects(:sleep)
-    @display.expects(:dispose)
-
+  test "initialize" do
+    Smirch::GUI::Swt.expects(:new).with(kind_of(Smirch::Application), "Smirch").returns(@gui)
     s = Smirch::Application.new
+  end
+
+  test "main_loop" do
+    s = Smirch::Application.new
+    @gui.expects(:main_loop)
     s.main_loop
   end
 
-  def test_layout
-    Swt::Layout::GridLayout.expects(:new).with(1, true).returns(@grid_layout)
-    @shell.expects(:layout=).with(@grid_layout)
-
-    Swt::Widgets::TabFolder.expects(:new).with(@shell, Swt::SWT::BORDER | Swt::SWT::BOTTOM).returns(@tab_folder)
-    @tab_folder.expects(:layout_data=).with(@grid_data)
-
-    Smirch::Application::Tab.expects(:new).with(@tab_folder, 'Server', :background => @color, :foreground => @color, :font => @font).returns(@tab)
-
-    Swt::Widgets::Text.expects(:new).with(@shell, Swt::SWT::BORDER).returns(@input_box)
-    @input_box.expects(:layout_data=).with(@grid_data)
-    @input_box.expects(:add_key_listener)
-
-    s = Smirch::Application.new
-    s.main_loop
-  end
-
-  def test_server_command
+  test "/server" do
     s = Smirch::Application.new
 
+    seq = sequence("/server")
+    @gui.expects(:update).with(:client_connecting).in_sequence(seq)
     Smirch::IrcClient.expects(:new).with({
-      'server' => 'irc.freenode.net', 
+      'server' => 'irc.example.com', 
       'port' => 6666,
       'nick' => 'MyNick',
       'user' => 'MyUser',
       'real' => 'Dude guy'
-    }).returns(@client)
-    @display.expects(:async_exec).yields
-    @client.expects(:connect).yields
-    @client.expects(:start_polling)
+    }).returns(@client).in_sequence(seq)
 
-    receive_runner = nil
-    @display.expects(:timer_exec).with do |ms, r|
-      ms == 500 && r.is_a?(Smirch::Application::ReceiveRunner) && receive_runner = r
-    end
+    Thread.expects(:new).yields.in_sequence(seq)
+    @client.expects(:connect).yields.in_sequence(seq)
+    @gui.expects(:update).with(:client_connected).in_sequence(seq)
+    @client.expects(:start_polling).in_sequence(seq)
 
-    simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
-    assert_not_nil receive_runner
+    # periodic thread to do grab messages from the client
+    Thread.expects(:new).in_sequence(seq)
+
+    s.execute("/server irc.example.com 6666 MyNick MyUser Dude guy")
   end
 
-  def test_msg_command
+  test "/msg" do
     s = Smirch::Application.new
-    s.stubs(:current_tab).returns(@tab)
-    simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
+    s.execute("/server irc.example.com 6666 MyNick MyUser Dude guy")
     @client.expects(:privmsg).with('dude', 'hey')
-    @chat_box.expects(:append).with(">dude< hey\n")
-    simulate_input("/msg dude hey")
+    @gui.expects(:update).with(:privmsg, "dude", "hey")
+    s.execute("/msg dude hey")
   end
 
-  def test_msg_requires_connection
-    @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
+  test "/msg requires connection" do
     s = Smirch::Application.new
-    s.stubs(:current_tab).returns(@tab)
-    simulate_input("/msg dude hey")
+    @gui.expects(:update).with(:connection_required)
+    s.execute("/msg dude hey")
   end
 
-  def test_unknown_command
+  test "unknown command" do
     s = Smirch::Application.new
-    simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
+    s.execute("/server irc.example.com 6666 MyNick MyUser Dude guy")
     @client.expects(:execute).with('foo', 'huge bar')
-    simulate_input("/foo huge bar")
+    s.execute("/foo huge bar")
   end
 
-  def test_unknown_command_requires_connection
-    @chat_box.expects(:append).with("You have to connect to a server first to do that.\n")
+  test "unknown command requires connection" do
     s = Smirch::Application.new
-    s.stubs(:current_tab).returns(@tab)
-    simulate_input("/foo huge bar")
+    @gui.expects(:update).with(:connection_required)
+    s.execute("/foo huge bar")
   end
 
-  def test_connect
-    config = {'server' => 'irc.freenode.net', 'port' => 6666, 'nick' => 'MyNick', 'user' => 'MyUser', 'real' => 'Dude guy'}
+  test "/connect" do
+    config = {'server' => 'irc.example.com', 'port' => 6666, 'nick' => 'MyNick', 'user' => 'MyUser', 'real' => 'Dude guy'}
     Smirch.expects(:load_config).returns(config)
     s = Smirch::Application.new
-    s.stubs(:current_tab).returns(@tab)
 
-    seq = sequence('connecting')
-    @chat_box.expects(:append).with("Connecting...\n").in_sequence(seq)
+    seq = sequence("/connect")
+    @gui.expects(:update).with(:client_connecting).in_sequence(seq)
     Smirch::IrcClient.expects(:new).with({
-      'server' => 'irc.freenode.net', 
-      'port' => 6666, 
+      'server' => 'irc.example.com', 
+      'port' => 6666,
       'nick' => 'MyNick',
       'user' => 'MyUser',
       'real' => 'Dude guy'
-    }).returns(@client)
-    @display.expects(:async_exec).yields.in_sequence(seq)
+    }).returns(@client).in_sequence(seq)
+
+    Thread.expects(:new).yields.in_sequence(seq)
     @client.expects(:connect).yields.in_sequence(seq)
-    @chat_box.expects(:append).with("Connected!\n").in_sequence(seq)
+    @gui.expects(:update).with(:client_connected).in_sequence(seq)
+    @client.expects(:start_polling).in_sequence(seq)
 
-    simulate_input("/connect")
+    # periodic thread to do grab messages from the client
+    Thread.expects(:new).in_sequence(seq)
+
+    s.execute("/connect")
   end
-
-  def test_receive_runner
-    message = stub('message')
-    display = stub('display')
-    client = stub('client')
-    parent = stub('main window')
-    runner = Smirch::Application::ReceiveRunner.new(display, client, parent)
-
-    run_seq = sequence('running')
-    client.expects(:queue).in_sequence(run_seq).returns([message])
-    message.expects(:process).with(parent, client).in_sequence(run_seq)
-    display.expects(:timer_exec).with(500, runner)
-    runner.run
-  end
-
-  def test_find_tab
-    s = Smirch::Application.new
-    s.stubs(:current_tab).returns(@tab)
-
-    tab, tab_item, chat_box = stub_tab('#hugetown')
-    @tab_folder.expects(:selection=).with(tab_item)
-
-    s.new_tab('#hugetown')
-    assert_equal tab, s.find_tab('#hugetown')
-  end
-
-  def test_close_tab
-    s = Smirch::Application.new
-    tab, tab_item, chat_box = stub_tab('#hugetown')
-
-    s.new_tab('#hugetown')
-    tab.expects(:dispose)
-    @tab_folder.expects(:selection=).with(0)
-    s.close_tab('#hugetown')
-  end
-
-  def test_print
-    s = Smirch::Application.new
-
-    new_tab, new_tab_item, new_chat_box = stub_tab('#hugetown')
-    s.new_tab('#hugetown')
-
-    s.expects(:current_tab).returns(@tab)
-    @chat_box.expects(:append).with("oh hai\n")
-    s.print("oh hai\n")
-
-    new_chat_box.expects(:append).with("oh hai\n")
-    s.print("oh hai\n", '#hugetown')
-  end
-
-  #def test_server_notice_received
-    #s = Smirch::Application.new
-    #simulate_input("/server irc.freenode.net 6666 MyNick MyUser Dude guy")
-    #@chat_box.expects(:append).with("hey buddy\n")
-    #simulate_received(":gibson.freenode.net NOTICE * :hey buddy\r\n")
-  #end
 end

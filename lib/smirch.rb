@@ -5,6 +5,7 @@ require 'yaml'
 require 'etc'
 require 'swt'
 require 'socksify'
+require 'pathname'
 
 module Smirch
   def self.load_config
@@ -20,8 +21,10 @@ end
 Socksify.debug = true
 Thread.abort_on_exception = true
 
-require File.dirname(__FILE__) + "/irc_message_parser"
-require File.dirname(__FILE__) + "/smirch/application"
-require File.dirname(__FILE__) + "/smirch/entity"
-require File.dirname(__FILE__) + "/smirch/irc_message"
-require File.dirname(__FILE__) + "/smirch/irc_client"
+path = Pathname.new(File.dirname(__FILE__))
+require path + "irc_message_parser"
+require path + "smirch" + "application"
+require path + "smirch" + "entity"
+require path + "smirch" + "irc_message"
+require path + "smirch" + "irc_client"
+require path + "smirch" + "gui"
