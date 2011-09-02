@@ -121,6 +121,26 @@ class UnitTests::TestIrcClient < Test::Unit::TestCase
     assert message_2.from.me?
   end
 
+  test "tracks nick changes correctly" do
+    client = new_client
+    client.connect
+
+    simulate_received(client, %{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
+    message = client.queue.shift
+    assert_equal 'smirch', message.from.nick
+    assert message.from.me?
+
+    simulate_received(client, %{:smirch!~smirch@example.com NICK :monkeypants\r\n})
+    message = client.queue.shift
+    assert_equal 'smirch', message.from.nick
+    assert message.from.me?
+
+    simulate_received(client, %{:monkeypants!~smirch@example.com JOIN :#pantstown\r\n})
+    message = client.queue.shift
+    assert_equal 'monkeypants', message.from.nick
+    assert message.from.me?
+  end
+
   #def test_join_starts_tracking_channel
     #@client.connect
 
