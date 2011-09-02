@@ -6,39 +6,42 @@ module Smirch
     end
 
     def execute(str)
-      if str[0] == ?/
-        command, predicate = str.split(/\s+/, 2)
+      return if str[0] != ?/
+      command, predicate = str.split(/\s+/, 2)
 
-        case command
-        when "/connect"
-          config = Smirch.load_config
-          setup_client(config)
-        when "/server"
-          args = predicate.split(/\s+/, 5)
-          args[1] = args[1].to_i
-          setup_client({
-            'server' => args[0],
-            'port' => args[1],
-            'nick' => args[2],
-            'user' => args[3],
-            'real' => args[4]
-          })
-        when "/msg"
-          require_connection do
-            args = predicate.split(/\s+/, 2)
-            @client.privmsg(*args)
-            @gui.update(:privmsg, *args)
-          end
-        else
-          require_connection do
-            @client.execute(command[1..-1], predicate)
-          end
+      case command
+      when "/connect"
+        config = Smirch.load_config
+        setup_client(config)
+      when "/server"
+        args = predicate.split(/\s+/, 5)
+        args[1] = args[1].to_i
+        setup_client({
+          'server' => args[0],
+          'port' => args[1],
+          'nick' => args[2],
+          'user' => args[3],
+          'real' => args[4]
+        })
+      when "/msg"
+        require_connection do
+          args = predicate.split(/\s+/, 2)
+          @client.privmsg(*args)
+          @gui.update(:privmsg, *args)
+        end
+      else
+        require_connection do
+          @client.execute(command[1..-1], predicate)
         end
       end
     end
 
     def main_loop
       @gui.main_loop
+    end
+
+    def nick
+      @client ? @client.nick : nil
     end
 
     private
@@ -52,7 +55,7 @@ module Smirch
           @client.start_polling
           @check_message_thread = Thread.new do
             loop do
-              puts "Checking for messages..."
+              #puts "Checking for messages..."
               check_client_for_messages
               sleep 0.5
             end

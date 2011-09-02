@@ -1,6 +1,7 @@
 module Smirch
   class IrcClient
-    attr_reader :queue, :channels
+    attr_reader :queue, :channels, :nick
+
     def initialize(options)
       @options = options
       @channels = {}
@@ -53,6 +54,8 @@ module Smirch
               case message
               when nil
                 # FIXME: this condition can go away after parser bugs are fixed
+                puts "ZOMG: #{raw_message}"
+                ignore = true
               when IrcMessage::Ping
                 execute("PONG")
                 ignore = true

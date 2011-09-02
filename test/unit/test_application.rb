@@ -95,4 +95,11 @@ class UnitTests::TestApplication < Test::Unit::TestCase
 
     s.execute("/connect")
   end
+
+  test "nick" do
+    s = Smirch::Application.new
+    s.execute("/server irc.example.com 6666 MyNick MyUser Dude guy")
+    @client.expects(:nick).returns("MyNick")
+    assert_equal "MyNick", s.nick
+  end
 end

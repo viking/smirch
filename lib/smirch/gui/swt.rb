@@ -33,7 +33,11 @@ module Smirch
           when :client_connected
             current_tab.chat_box.append("Connected!\n")
           when :privmsg
-            current_tab.chat_box.append(">#{args[0]}< #{args[1]}\n")
+            if t = find_tab(args[0])
+              t.chat_box.append("<#{@app.nick}> #{args[1]}\n")
+            else
+              current_tab.chat_box.append(">#{args[0]}< #{args[1]}\n")
+            end
           when :connection_required
             current_tab.chat_box.append("You have to connect to a server first to do that.\n")
           when :message_received
@@ -93,7 +97,12 @@ module Smirch
       def input_received
         input = @input_box.text
         @input_box.text = ""
-        @app.execute(input)
+        puts "#{current_tab.name}: #{input}"
+        if input[0] == ?/
+          @app.execute(input)
+        elsif current_tab.name != "Server"
+          @app.execute("/msg #{current_tab.name} #{input}")
+        end
       end
 
       def new_tab(name)
@@ -128,7 +137,7 @@ module Smirch
         case message
         when IrcMessage::Join
           if message.from.me?
-            new_tab(message.channel_name)
+            @current_tab = new_tab(message.channel_name)
           else
             print(message.to_s, message.channel_name)
           end
