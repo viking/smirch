@@ -25,7 +25,7 @@ module Smirch
       end
 
       def update(event, *args)
-        # TODO: use Smirch::GUI::Event or something
+        # TODO: use Smirch::Event or something
         @display.async_exec do
           case event
           when :client_connecting
@@ -37,58 +37,9 @@ module Smirch
           when :connection_required
             current_tab.chat_box.append("You have to connect to a server first to do that.\n")
           when :message_received
-            message = args[0]
-            case message
-            when IrcMessage::Join
-              if message.from.me?
-                new_tab(message.channel_name)
-              else
-                print(message.to_s, message.channel_name)
-              end
-            when IrcMessage::Part
-              if message.from.me?
-                close_tab(message.channel_name)
-              else
-                print(message.to_s, message.channel_name)
-              end
-            else
-              if message.channel_name
-                print(message.to_s, message.channel_name)
-              #elsif message.from.server?
-              else
-                print(message.to_s, 'Server')
-              end
-            end
+            process_message(args[0])
           end
         end
-      end
-
-      def new_tab(name)
-        tab = Tab.new(@tab_folder, name, {
-          :background => @black,
-          :foreground => @white,
-          :font => @font_18
-        })
-        @tab_folder.selection = tab.tab_item
-        @tabs << tab
-        tab
-      end
-
-      def find_tab(name)
-        @tabs.find { |t| t.name == name }
-      end
-
-      def close_tab(name)
-        index = (0...@tabs.length).find { |i| @tabs[i].name == name }
-        tab = @tabs[index]
-        tab.dispose
-        @tabs.delete_at(index)
-        @tab_folder.selection = index > 0 ? index - 1 : 0
-      end
-
-      def print(str, tab_name = nil)
-        tab = tab_name ? find_tab(tab_name) : current_tab
-        tab.chat_box.append(str + "\n")
       end
 
       private
@@ -143,6 +94,58 @@ module Smirch
         input = @input_box.text
         @input_box.text = ""
         @app.execute(input)
+      end
+
+      def new_tab(name)
+        tab = Tab.new(@tab_folder, name, {
+          :background => @black,
+          :foreground => @white,
+          :font => @font_18
+        })
+        @tab_folder.selection = tab.tab_item
+        @tabs << tab
+        tab
+      end
+
+      def find_tab(name)
+        @tabs.find { |t| t.name == name }
+      end
+
+      def close_tab(name)
+        index = (0...@tabs.length).find { |i| @tabs[i].name == name }
+        tab = @tabs[index]
+        tab.dispose
+        @tabs.delete_at(index)
+        @tab_folder.selection = index > 0 ? index - 1 : 0
+      end
+
+      def print(str, tab_name = nil)
+        tab = tab_name ? find_tab(tab_name) : current_tab
+        tab.chat_box.append(str + "\n")
+      end
+
+      def process_message(message)
+        case message
+        when IrcMessage::Join
+          if message.from.me?
+            new_tab(message.channel_name)
+          else
+            print(message.to_s, message.channel_name)
+          end
+        when IrcMessage::Part
+          if message.from.me?
+            close_tab(message.channel_name)
+          else
+            print(message.to_s, message.channel_name)
+          end
+        else
+          if message.channel_name
+            print(message.to_s, message.channel_name)
+          #elsif message.from.server?
+          else
+            print(message.to_s, 'Server')
+          end
+        end
       end
     end
   end
