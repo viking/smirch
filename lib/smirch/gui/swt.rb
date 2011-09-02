@@ -7,7 +7,7 @@ module Smirch
       def initialize(app, title)
         @app = app
         @display = ::Swt.display
-        @shell = Widgets::Shell.new(@display)
+        @shell = Widgets::Shell.new(@display, SWT::SHELL_TRIM)
         @shell.text = title
         @shell.layout = Layout::GridLayout.new(1, true)
         setup_colors_and_fonts
