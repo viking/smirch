@@ -41,7 +41,7 @@ module Smirch
           when :connection_required
             current_tab.chat_box.append("You have to connect to a server first to do that.\n")
           when :syntax_error
-            current_tab.chat_box.append("Syntax: #{args[0]}")
+            current_tab.chat_box.append("Syntax: #{args[0]}\n")
           when :message_received
             process_message(args[0])
           end
