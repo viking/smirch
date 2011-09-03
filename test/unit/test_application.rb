@@ -102,4 +102,10 @@ class UnitTests::TestApplication < Test::Unit::TestCase
     @client.expects(:nick).returns("MyNick")
     assert_equal "MyNick", s.nick
   end
+
+  test "syntax error" do
+    s = Smirch::Application.new
+    @gui.expects(:update).with(:syntax_error, "/connect")
+    s.execute("/connect foo bar")
+  end
 end

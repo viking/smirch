@@ -12,7 +12,10 @@ module Smirch
 
       command = @commands.find { |c| c.name == command_name }
       if command
-        predicate ? command.execute(predicate) : command.execute
+        result = predicate ? command.execute(predicate) : command.execute
+        if result == :syntax_error
+          @gui.update(:syntax_error, command.syntax)
+        end
       else
         require_connection do
           @client.execute(command_name, predicate)
