@@ -65,7 +65,7 @@ grammar IrcMessage
   end
 
   rule ip_address
-    ( ipv4_part '.' ipv4_part '.' ipv4_part '.' ipv4_part )
+    ( ipv4_part '.' ipv4_part '.' ipv4_part '.' ipv4_part !'.')
     /
     ( ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part ':' ipv6_part )
   end
@@ -80,7 +80,7 @@ grammar IrcMessage
 
   # I don't actually know what the exact format for this is.
   rule cloak
-    (alpha / special)+ ('/' (alphanumeric / special)+)+
+    (alpha / special / '.')+ ('/' (alphanumeric / special / '.')+)+
   end
 
   rule command

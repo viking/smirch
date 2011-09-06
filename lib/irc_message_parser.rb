@@ -628,6 +628,7 @@ module IrcMessage
     def ipv4_part4
       elements[6]
     end
+
   end
 
   module IpAddress1
@@ -715,6 +716,23 @@ module IrcMessage
               if r7
                 r8 = _nt_ipv4_part
                 s1 << r8
+                if r8
+                  i9 = index
+                  if has_terminal?('.', false, index)
+                    r10 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                    @index += 1
+                  else
+                    terminal_parse_failure('.')
+                    r10 = nil
+                  end
+                  if r10
+                    r9 = nil
+                  else
+                    @index = i9
+                    r9 = instantiate_node(SyntaxNode,input, index...index)
+                  end
+                  s1 << r9
+                end
               end
             end
           end
@@ -731,93 +749,93 @@ module IrcMessage
     if r1
       r0 = r1
     else
-      i9, s9 = index, []
-      r10 = _nt_ipv6_part
-      s9 << r10
-      if r10
+      i11, s11 = index, []
+      r12 = _nt_ipv6_part
+      s11 << r12
+      if r12
         if has_terminal?(':', false, index)
-          r11 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
           @index += 1
         else
           terminal_parse_failure(':')
-          r11 = nil
+          r13 = nil
         end
-        s9 << r11
-        if r11
-          r12 = _nt_ipv6_part
-          s9 << r12
-          if r12
+        s11 << r13
+        if r13
+          r14 = _nt_ipv6_part
+          s11 << r14
+          if r14
             if has_terminal?(':', false, index)
-              r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              r15 = instantiate_node(SyntaxNode,input, index...(index + 1))
               @index += 1
             else
               terminal_parse_failure(':')
-              r13 = nil
+              r15 = nil
             end
-            s9 << r13
-            if r13
-              r14 = _nt_ipv6_part
-              s9 << r14
-              if r14
+            s11 << r15
+            if r15
+              r16 = _nt_ipv6_part
+              s11 << r16
+              if r16
                 if has_terminal?(':', false, index)
-                  r15 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  r17 = instantiate_node(SyntaxNode,input, index...(index + 1))
                   @index += 1
                 else
                   terminal_parse_failure(':')
-                  r15 = nil
+                  r17 = nil
                 end
-                s9 << r15
-                if r15
-                  r16 = _nt_ipv6_part
-                  s9 << r16
-                  if r16
+                s11 << r17
+                if r17
+                  r18 = _nt_ipv6_part
+                  s11 << r18
+                  if r18
                     if has_terminal?(':', false, index)
-                      r17 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                      r19 = instantiate_node(SyntaxNode,input, index...(index + 1))
                       @index += 1
                     else
                       terminal_parse_failure(':')
-                      r17 = nil
+                      r19 = nil
                     end
-                    s9 << r17
-                    if r17
-                      r18 = _nt_ipv6_part
-                      s9 << r18
-                      if r18
+                    s11 << r19
+                    if r19
+                      r20 = _nt_ipv6_part
+                      s11 << r20
+                      if r20
                         if has_terminal?(':', false, index)
-                          r19 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                          r21 = instantiate_node(SyntaxNode,input, index...(index + 1))
                           @index += 1
                         else
                           terminal_parse_failure(':')
-                          r19 = nil
+                          r21 = nil
                         end
-                        s9 << r19
-                        if r19
-                          r20 = _nt_ipv6_part
-                          s9 << r20
-                          if r20
+                        s11 << r21
+                        if r21
+                          r22 = _nt_ipv6_part
+                          s11 << r22
+                          if r22
                             if has_terminal?(':', false, index)
-                              r21 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                              r23 = instantiate_node(SyntaxNode,input, index...(index + 1))
                               @index += 1
                             else
                               terminal_parse_failure(':')
-                              r21 = nil
+                              r23 = nil
                             end
-                            s9 << r21
-                            if r21
-                              r22 = _nt_ipv6_part
-                              s9 << r22
-                              if r22
+                            s11 << r23
+                            if r23
+                              r24 = _nt_ipv6_part
+                              s11 << r24
+                              if r24
                                 if has_terminal?(':', false, index)
-                                  r23 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                                  r25 = instantiate_node(SyntaxNode,input, index...(index + 1))
                                   @index += 1
                                 else
                                   terminal_parse_failure(':')
-                                  r23 = nil
+                                  r25 = nil
                                 end
-                                s9 << r23
-                                if r23
-                                  r24 = _nt_ipv6_part
-                                  s9 << r24
+                                s11 << r25
+                                if r25
+                                  r26 = _nt_ipv6_part
+                                  s11 << r26
                                 end
                               end
                             end
@@ -832,15 +850,15 @@ module IrcMessage
           end
         end
       end
-      if s9.last
-        r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
-        r9.extend(IpAddress1)
+      if s11.last
+        r11 = instantiate_node(SyntaxNode,input, i11...index, s11)
+        r11.extend(IpAddress1)
       else
-        @index = i9
-        r9 = nil
+        @index = i11
+        r11 = nil
       end
-      if r9
-        r0 = r9
+      if r11
+        r0 = r11
       else
         @index = i0
         r0 = nil
@@ -1026,8 +1044,19 @@ module IrcMessage
         if r4
           r2 = r4
         else
-          @index = i2
-          r2 = nil
+          if has_terminal?('.', false, index)
+            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure('.')
+            r5 = nil
+          end
+          if r5
+            r2 = r5
+          else
+            @index = i2
+            r2 = nil
+          end
         end
       end
       if r2
@@ -1044,67 +1073,78 @@ module IrcMessage
     end
     s0 << r1
     if r1
-      s5, i5 = [], index
+      s6, i6 = [], index
       loop do
-        i6, s6 = index, []
+        i7, s7 = index, []
         if has_terminal?('/', false, index)
-          r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          r8 = instantiate_node(SyntaxNode,input, index...(index + 1))
           @index += 1
         else
           terminal_parse_failure('/')
-          r7 = nil
+          r8 = nil
         end
-        s6 << r7
-        if r7
-          s8, i8 = [], index
+        s7 << r8
+        if r8
+          s9, i9 = [], index
           loop do
-            i9 = index
-            r10 = _nt_alphanumeric
-            if r10
-              r9 = r10
+            i10 = index
+            r11 = _nt_alphanumeric
+            if r11
+              r10 = r11
             else
-              r11 = _nt_special
-              if r11
-                r9 = r11
+              r12 = _nt_special
+              if r12
+                r10 = r12
               else
-                @index = i9
-                r9 = nil
+                if has_terminal?('.', false, index)
+                  r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                  @index += 1
+                else
+                  terminal_parse_failure('.')
+                  r13 = nil
+                end
+                if r13
+                  r10 = r13
+                else
+                  @index = i10
+                  r10 = nil
+                end
               end
             end
-            if r9
-              s8 << r9
+            if r10
+              s9 << r10
             else
               break
             end
           end
-          if s8.empty?
-            @index = i8
-            r8 = nil
+          if s9.empty?
+            @index = i9
+            r9 = nil
           else
-            r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+            r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
           end
-          s6 << r8
+          s7 << r9
         end
-        if s6.last
-          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-          r6.extend(Cloak0)
+        if s7.last
+          r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+          r7.extend(Cloak0)
         else
-          @index = i6
-          r6 = nil
+          @index = i7
+          r7 = nil
         end
-        if r6
-          s5 << r6
+        if r7
+          s6 << r7
         else
           break
         end
       end
-      if s5.empty?
-        @index = i5
-        r5 = nil
+      if s6.empty?
+        @index = i6
+        r6 = nil
       else
-        r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+        r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
       end
-      s0 << r5
+      s0 << r6
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)

@@ -280,4 +280,18 @@ class UnitTests::TestIrcMessageParser < Test::Unit::TestCase
     result = parser.parse(message)
     assert result, parser.failure_reason
   end
+
+  def test_weird_hostname
+    message = ":Hakon|mbp!~hakon1@152.138.16.62.customer.cdi.no QUIT :Ping timeout: 268 seconds"
+    parser = IrcMessageParser.new
+    result = parser.parse(message)
+    assert result, parser.failure_reason
+  end
+
+  def test_crazy_cloak
+    message = ":SpaceghostC2C!4c73f385@gateway/web/freenode/ip.76.115.243.133 PRIVMSG #RubyOnRails :denysonique: to get a specific commit you use: :ref => '7ea9a9ffd2338aaef5b0'"
+    parser = IrcMessageParser.new
+    result = parser.parse(message)
+    assert result, parser.failure_reason
+  end
 end
