@@ -88,10 +88,19 @@ module Smirch
         grid_data.heightHint = 25
         @input_box.layout_data = grid_data
         @input_box.add_key_listener(Events::KeyListener.impl { |name, event|
-          if name == :keyPressed && event.character == SWT::CR
-            input_received
+          if name == :keyPressed
+            case event.character
+            when SWT::CR
+              input_received
+            end
           end
         })
+        @input_box.add_traverse_listener do |event|
+          if event.detail == SWT::TRAVERSE_TAB_NEXT
+            tab_complete
+            event.doit = false
+          end
+        end
         @input_box.font = @font_15
         @input_box.set_focus
       end
@@ -104,6 +113,20 @@ module Smirch
           @app.execute(input)
         elsif current_tab.name != "Server"
           @app.execute("/msg #{current_tab.name} #{input}")
+        end
+      end
+
+      def tab_complete
+        return if current_tab.name == "Server"
+
+        channel = @app.channels[current_tab.name]
+        md = @input_box.text.match(/\S+$/)
+        if md
+          nick = channel.nicks.detect { |n| n =~ /^#{md[0]}/ }
+          if nick
+            str = nick[md[0].length..-1] + (md.begin(0) == 0 ? ": " : " ")
+            @input_box.append(str)
+          end
         end
       end
 
