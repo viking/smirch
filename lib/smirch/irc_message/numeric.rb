@@ -42,6 +42,18 @@ module Smirch
     end
 
     class Names < Numeric
+      def nicks
+        @nicks ||= @text.split(" ")
+      end
+
+      private
+
+      def setup(command, middle, trailing)
+        @code = command.to_i
+        @to = middle[0]
+        @channel_name = middle[2]
+        @text = trailing
+      end
     end
   end
 end

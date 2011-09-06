@@ -13,8 +13,4 @@ class UnitTests::TestCTC < Test::Unit::TestCase
     message = Smirch::IrcMessage.parse(data)
     assert_equal "* *** Looking up your hostname...", message.to_s
   end
-
-  test "to_s when private msg" do
-    pend
-  end
 end

@@ -1,21 +1,21 @@
 module Smirch
   class Channel
-    attr_reader :name, :users
+    attr_reader :name, :nicks
 
     def initialize(name)
       @name = name
-      @users = []
+      @nicks = []
     end
 
-    def push(*users)
-      users.each do |user|
-        md = user.match(/^([@+])?(.+)$/)
-        @users.push(md[2])
+    def push(*nicks)
+      nicks.each do |nick|
+        md = nick.match(/^([@+])?(.+)$/)
+        @nicks.push(md[2])
       end
     end
 
-    def delete(user)
-      @users.delete(user)
+    def delete(nick)
+      @nicks.delete(nick)
     end
   end
 end

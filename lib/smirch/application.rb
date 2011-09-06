@@ -1,8 +1,10 @@
 module Smirch
   class Application
+    attr_reader :channels
 
     def initialize
       @gui = GUI::Swt.new(self, "Smirch")
+      @channels = {}
       setup_commands
     end
 
@@ -62,6 +64,7 @@ module Smirch
       @client = IrcClient.new(options)
       Thread.new do
         @client.connect do
+          @channels.clear
           @gui.update(:client_connected)
           @client.start_polling
           @check_message_thread = Thread.new do
@@ -80,7 +83,29 @@ module Smirch
       while !queue.empty?
         message = queue.shift
         @gui.update(:message_received, message)
-        #message.process(self, @client)
+
+        case message
+        when IrcMessage::Join
+          if message.from.me?
+            @channels[message.channel_name] = Channel.new(message.channel_name)
+          else
+            @channels[message.channel_name].push(message.from.nick)
+          end
+        when IrcMessage::Part
+          if message.from.me?
+            @channels.delete(message.channel_name)
+          else
+            @channels[message.channel_name].delete(message.from.nick)
+          end
+        when IrcMessage::Quit
+          if !message.from.me?
+            @channels.each_value { |c| c.delete(message.from.nick) }
+          end
+        when IrcMessage::Names
+          if @channels.has_key?(message.channel_name)
+            @channels[message.channel_name].push(*message.nicks)
+          end
+        end
       end
     end
 
