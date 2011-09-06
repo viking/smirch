@@ -17,12 +17,11 @@ module Smirch
           when /^[A-Z]+$/
             IrcMessage.const_get(command[0..0] + command[1..-1].downcase)
           end
+        klass.new(result)
       rescue
         puts "ERROR, no class found: #{text.inspect}"
-        return nil
+        nil
       end
-
-      klass.new(result)
     end
   end
 end

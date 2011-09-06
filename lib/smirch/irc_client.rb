@@ -45,23 +45,27 @@ module Smirch
             raw_messages = data.split(/\r\n/, -1)
             remaining = raw_messages.pop
             raw_messages.each do |raw_message|
+              $stderr.puts raw_message
               message = IrcMessage.parse(raw_message)
-              if message.from
-                message.from.me = (message.from.nick == @nick)
-              end
 
               ignore = false
-              case message
-              when nil
+              if message.nil?
                 # FIXME: this condition can go away after parser bugs are fixed
-                puts "ZOMG: #{raw_message}"
+                #puts "ZOMG: #{raw_message}"
                 ignore = true
-              when IrcMessage::Ping
-                execute("PONG")
-                ignore = true
-              when IrcMessage::Nick
-                if message.from.me?
-                  @nick = message.text
+              else
+                if message.from
+                  message.from.me = (message.from.nick == @nick)
+                end
+
+                case message
+                when IrcMessage::Ping
+                  execute("PONG")
+                  ignore = true
+                when IrcMessage::Nick
+                  if message.from.me?
+                    @nick = message.text
+                  end
                 end
               end
 
