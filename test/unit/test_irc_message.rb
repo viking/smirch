@@ -266,7 +266,7 @@ class UnitTests::TestIrcMessage < Test::Unit::TestCase
   def test_RPL_NAMREPLY
     message = %{:asimov.freenode.net 353 crookshanks = #vim :crookshanks amiri rejb remyo surgeon smeea galaxywatcher daniel_ RomD comand wokka AopicieR mavrc macrobat AkiraYB okayzed azoic gehdan DestinyAwaits viking WebDragon jonathanrwallace ajpiano malkomalko nevans sophacles dv_ agile riq gertidon quake_guy kTT orafu jjardon kojul drio paradigm bryanl threeve arturas pigdude fcuk112 ceej marchino julesa consumerism abstrakt vitiate1 b4d jamur2 tizbac rafab keystr0k hokapoka JohannesSM64 chris_cooke smuf}
     result = Smirch::IrcMessage.parse(message)
-    assert_instance_of Smirch::IrcMessage::Numeric, result
+    assert_instance_of Smirch::IrcMessage::Names, result
     assert_equal 353, result.code
 
     from = result.from

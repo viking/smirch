@@ -93,5 +93,3 @@ module Smirch
     end
   end
 end
-
-require File.dirname(__FILE__) + "/irc_client/channel"

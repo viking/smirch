@@ -1,6 +1,18 @@
 module Smirch
   module IrcMessage
     class Numeric < Base
+      CODE_CLASSES = {
+        '353' => 'Names'
+      }
+
+      def self.get_class(code)
+        if CODE_CLASSES.has_key?(code)
+          IrcMessage.const_get(CODE_CLASSES[code])
+        else
+          Numeric
+        end
+      end
+
       def to_s
         "* #{@text}"
       end
@@ -27,6 +39,9 @@ module Smirch
           end
           @text ||= trailing.nil? ? middle[1..-1].join(" ") : trailing
         end
+    end
+
+    class Names < Numeric
     end
   end
 end

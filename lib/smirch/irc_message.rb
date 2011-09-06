@@ -10,11 +10,13 @@ module Smirch
 
       command = result.command.text_value
       begin
-        klass = case command
-          when /^\d{3}$/  then IrcMessage::Numeric
+        klass =
+          case command
+          when /^\d{3}$/
+            IrcMessage::Numeric.get_class(command)
           when /^[A-Z]+$/
             IrcMessage.const_get(command[0..0] + command[1..-1].downcase)
-        end
+          end
       rescue
         puts "ERROR, no class found: #{text.inspect}"
         return nil

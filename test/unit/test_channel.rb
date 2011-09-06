@@ -3,7 +3,7 @@ require 'helper'
 class UnitTests::TestChannel < Test::Unit::TestCase
   def setup
     super
-    @channel = Smirch::IrcClient::Channel.new('#hugetown')
+    @channel = Smirch::Channel.new('#hugetown')
   end
 
   def test_name
