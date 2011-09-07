@@ -13,6 +13,8 @@ module Smirch
           @chat_box.background = options[:background]
           @chat_box.foreground = options[:foreground]
           @chat_box.font = options[:font]
+          @chat_box.word_wrap = true
+          @chat_box.wrap_indent = 20
           @character_count = 0
           @tab_item.control = @chat_box
         end
