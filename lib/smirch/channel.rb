@@ -17,5 +17,9 @@ module Smirch
     def delete(nick)
       @nicks.delete(nick)
     end
+
+    def has_nick?(nick)
+      @nicks.include?(nick)
+    end
   end
 end

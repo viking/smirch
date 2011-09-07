@@ -234,4 +234,8 @@ class UnitTests::TestApplication < Test::Unit::TestCase
     channel_2.expects(:delete).with('dude')
     simulate_received(s, message)
   end
+
+  test "change nick in channels when someone changes their nick" do
+    pend
+  end
 end

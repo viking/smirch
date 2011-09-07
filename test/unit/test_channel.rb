@@ -30,4 +30,10 @@ class UnitTests::TestChannel < Test::Unit::TestCase
     @channel.delete('foo')
     assert_equal %w{bar baz}, @channel.nicks
   end
+
+  def test_has_nick?
+    @channel.push(*%w{foo bar baz})
+    assert @channel.has_nick?('foo')
+    assert !@channel.has_nick?('bro')
+  end
 end

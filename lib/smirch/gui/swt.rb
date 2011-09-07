@@ -201,6 +201,14 @@ module Smirch
           else
             print(message.to_s, message.channel_name)
           end
+        when IrcMessage::Quit
+          if !message.from.me?
+            @app.channels.each_pair do |channel_name, channel|
+              if channel.has_nick?(message.from.nick)
+                print(message.to_s, channel_name)
+              end
+            end
+          end
         when IrcMessage::Privmsg
           if message.channel_name
             print_chat_message(message.from.nick, message.text, message.channel_name)
