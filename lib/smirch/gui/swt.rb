@@ -29,19 +29,23 @@ module Smirch
         @display.async_exec do
           case event
           when :client_connecting
-            current_tab.chat_box.append("Connecting...\n")
+            print("Connecting...", 'Server');
           when :client_connected
-            current_tab.chat_box.append("Connected!\n")
+            print("Connected!", 'Server');
+          when :client_disconnected
+            @tabs.each do |tab|
+              print("Disconnected.", tab)
+            end
           when :privmsg
-            if t = find_tab(args[0])
-              t.chat_box.append("<#{@app.nick}> #{args[1]}\n")
+            if tab = find_tab(args[0])
+              print("<#{@app.nick}> #{args[1]}", tab)
             else
-              current_tab.chat_box.append(">#{args[0]}< #{args[1]}\n")
+              print(">#{args[0]}< #{args[1]}")
             end
           when :connection_required
-            current_tab.chat_box.append("You have to connect to a server first to do that.\n")
+            print("You have to connect to a server first to do that.")
           when :syntax_error
-            current_tab.chat_box.append("Syntax: #{args[0]}\n")
+            print("Syntax: #{args[0]}")
           when :message_received
             process_message(args[0])
           end
@@ -153,9 +157,18 @@ module Smirch
         @tab_folder.selection = index > 0 ? index - 1 : 0
       end
 
-      def print(str, tab_name = nil)
-        tab = tab_name ? find_tab(tab_name) : current_tab
-        tab.chat_box.append(str + "\n")
+      def print(str, tab_or_tab_name = nil)
+        tab =
+          case tab_or_tab_name
+          when Swt::Tab
+            tab_or_tab_name
+          when String
+            find_tab(tab_or_tab_name)
+          when nil
+            current_tab
+          end
+
+        tab.append_to_chat_box(str + "\n")
       end
 
       def process_message(message)

@@ -9,7 +9,7 @@ module Smirch
           @name = name
           @tab_item = Swt::Widgets::TabItem.new(parent, Swt::SWT::NONE)
           @tab_item.text = name
-          @chat_box = Swt::Widgets::Text.new(parent, Swt::SWT::BORDER | Swt::SWT::MULTI | Swt::SWT::V_SCROLL | Swt::SWT::READ_ONLY)
+          @chat_box = Swt::Custom::StyledText.new(parent, Swt::SWT::BORDER | Swt::SWT::MULTI | Swt::SWT::V_SCROLL | Swt::SWT::READ_ONLY)
           @chat_box.background = options[:background]
           @chat_box.foreground = options[:foreground]
           @chat_box.font = options[:font]
@@ -21,6 +21,11 @@ module Smirch
           @chat_box = nil
           @tab_item.dispose
           @tab_item = nil
+        end
+
+        def append_to_chat_box(str)
+          @chat_box.append(str)
+          @chat_box.top_index = @chat_box.line_count - 1
         end
       end
     end
