@@ -33,7 +33,9 @@ class UnitTests::TestIrcClient < Test::Unit::TestCase
     @socket.expects(:write).with("NICK smirch\r\n").in_sequence(seq)
     @socket.expects(:write).with("USER smirch 0 * :Smirchy Guy\r\n")
 
-    new_client.connect
+    client = new_client
+    client.connect
+    assert client.connected?
   end
 
   def test_connect_with_proxy
@@ -59,7 +61,7 @@ class UnitTests::TestIrcClient < Test::Unit::TestCase
 
     client = new_client
     client.connect
-    client.poll
+    assert client.poll
     assert_equal messages, client.queue
   end
 
@@ -67,7 +69,7 @@ class UnitTests::TestIrcClient < Test::Unit::TestCase
     client = new_client
     client.connect
     @socket.expects(:read_nonblock).with(512).raises(Errno::EAGAIN)
-    client.poll
+    assert client.poll
   end
 
   def test_poll_lots_of_data
@@ -81,8 +83,16 @@ class UnitTests::TestIrcClient < Test::Unit::TestCase
     chunks = []
     num.times { |i| chunks << message[(i*512)..((i+1)*512-1)] }
     @socket.expects(:read_nonblock).with(512).times(num).returns(*chunks)
-    client.poll
+    assert client.poll
     assert_equal 100, client.queue.length
+  end
+
+  def test_poll_when_disconnected
+    client = new_client
+    client.connect
+    @socket.expects(:read_nonblock).with(512).raises(EOFError)
+    assert !client.poll
+    assert !client.connected?
   end
 
   def test_ping
@@ -140,46 +150,4 @@ class UnitTests::TestIrcClient < Test::Unit::TestCase
     assert_equal 'monkeypants', message.from.nick
     assert message.from.me?
   end
-
-  #def test_join_starts_tracking_channel
-    #@client.connect
-
-    #Smirch::IrcClient::Channel.expects(:new).with('#hugetown').returns(@channel)
-    #simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
-    #assert_equal @channel, @client.channels['#hugetown']
-  #end
-
-  #def test_tracks_channel_who_reply
-    #@client.connect
-
-    #Smirch::IrcClient::Channel.expects(:new).with('#hugetown').returns(@channel)
-    #simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
-
-    #@channel.expects(:push).with(*%w{smirch @dude +buddy guy})
-    #simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
-  #end
-
-  #def test_tracks_someone_joining_a_channel
-    #@client.connect
-    #simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
-    #simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
-    #@channel.expects(:push).with('pal')
-    #simulate_received(%{:pal!~pal@example.com JOIN :#hugetown\r\n})
-  #end
-
-  #def test_tracks_someone_leaving_a_channel
-    #@client.connect
-    #simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
-    #simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
-    #@channel.expects(:delete).with('buddy')
-    #simulate_received(%{:buddy!~buddy@example.com PART #hugetown\r\n})
-  #end
-
-  #def test_part_stops_tracking_channel
-    #@client.connect
-    #simulate_received(%{:smirch!~smirch@example.com JOIN :#hugetown\r\n})
-    #simulate_received(%{:asimov.freenode.net 353 smirch = #hugetown :smirch @dude +buddy guy\r\n})
-    #simulate_received(%{:smirch!~smirch@example.com PART #hugetown\r\n})
-    #assert_nil @client.channels['#hugetown']
-  #end
 end

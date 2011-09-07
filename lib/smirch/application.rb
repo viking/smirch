@@ -68,11 +68,11 @@ module Smirch
           @gui.update(:client_connected)
           @client.start_polling
           @check_message_thread = Thread.new do
-            loop do
-              #puts "Checking for messages..."
-              check_client_for_messages
+            while check_client_for_messages do
               sleep 0.5
             end
+            @client = nil
+            @gui.update(:client_disconnected)
           end
         end
       end
@@ -107,10 +107,12 @@ module Smirch
           end
         end
       end
+      # return false if client isn't connected anymore
+      @client.connected?
     end
 
     def require_connection
-      if @client
+      if @client && @client.connected?
         yield
       else
         @gui.update(:connection_required)

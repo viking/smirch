@@ -8,6 +8,7 @@ module Smirch
       @queue = []
       @mutex = Mutex.new
       @nick = options['nick']
+      @connected = false
     end
 
     def connect(&block)
@@ -17,17 +18,26 @@ module Smirch
         host = @options['server']
       end
       @socket = TCPSocket.new(host, @options['port'])
+      @connected = true
       block.call if block
-      connected
+      on_connected
     end
 
-    def connected
+    def on_connected
       @socket.write("NICK #{@nick}\r\n")
       @socket.write("USER #{@options['user']} 0 * :#{@options['real']}\r\n")
     end
 
+    def connected?
+      @connected
+    end
+
     def start_polling
-      @thread = Thread.new { loop { poll; sleep 0.25 } }
+      @thread = Thread.new do
+        while poll do
+          sleep(0.25)
+        end
+      end
     end
 
     def stop_polling
@@ -79,10 +89,15 @@ module Smirch
         rescue Errno::EAGAIN
           # no data
           #puts "Nothing."
+        rescue EOFError
+          # socket closed
+          @connected = false
+          return false
         ensure
           @mutex.unlock
         end
       end
+      true
     end
 
     def privmsg(user, message)

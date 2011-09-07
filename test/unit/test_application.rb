@@ -4,7 +4,7 @@ class UnitTests::TestApplication < Test::Unit::TestCase
   def setup
     @gui = stub('swt gui', :update => nil)
     Smirch::GUI::Swt.stubs(:new).returns(@gui)
-    @client = stub('client', :connect => nil, :start_polling => nil, :queue => [])
+    @client = stub('client', :connect => nil, :start_polling => nil, :queue => [], :connected? => true)
     Smirch::IrcClient.stubs(:new).returns(@client)
   end
 
@@ -58,6 +58,14 @@ class UnitTests::TestApplication < Test::Unit::TestCase
 
   test "/msg requires connection" do
     s = Smirch::Application.new
+    @gui.expects(:update).with(:connection_required)
+    s.execute("/msg dude hey")
+  end
+
+  test "/msg fails if client was disconnected" do
+    s = Smirch::Application.new
+    s.execute("/server irc.example.com 6666 MyNick MyUser Dude guy")
+    @client.expects(:connected?).returns(false)
     @gui.expects(:update).with(:connection_required)
     s.execute("/msg dude hey")
   end
@@ -221,7 +229,7 @@ class UnitTests::TestApplication < Test::Unit::TestCase
 
     # someone else quits
     message = Smirch::IrcMessage::Quit.allocate
-    message.stubs(:from => stub(:me? => false, :nick => 'dude'), :channel_name => '#foo')
+    message.stubs(:from => stub(:me? => false, :nick => 'dude'))
     channel_1.expects(:delete).with('dude')
     channel_2.expects(:delete).with('dude')
     simulate_received(s, message)
