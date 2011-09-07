@@ -10,6 +10,7 @@ module Smirch
         @shell = Widgets::Shell.new(@display, SWT::SHELL_TRIM)
         @shell.text = title
         @shell.layout = Layout::GridLayout.new(1, true)
+        @colorizer = NickColorizer.new
         setup_colors_and_fonts
         setup_menu
         setup_tabs
@@ -149,6 +150,10 @@ module Smirch
         @tabs.find { |t| t.name == name }
       end
 
+      def find_or_create_tab(name)
+        find_tab(name) || new_tab(name)
+      end
+
       def close_tab(name)
         index = (0...@tabs.length).find { |i| @tabs[i].name == name }
         tab = @tabs[index]
@@ -168,7 +173,18 @@ module Smirch
             current_tab
           end
 
-        tab.append_to_chat_box(str + "\n")
+        tab.append(str)
+      end
+
+      def print_chat_message(nick, str, channel_or_nick)
+        color_array = @colorizer.color_for(nick)
+        foreground = Graphics::Color.new(@display, *color_array)
+        tab = find_tab(channel_or_nick)
+        tab.append_chat_message(nick, str, {
+          :nick_foreground => foreground,
+          :nick_background => @black,
+        })
+        foreground.dispose
       end
 
       def process_message(message)
@@ -184,6 +200,13 @@ module Smirch
             close_tab(message.channel_name)
           else
             print(message.to_s, message.channel_name)
+          end
+        when IrcMessage::Privmsg
+          if message.channel_name
+            print_chat_message(message.from.nick, message.text, message.channel_name)
+          else
+            find_or_create_tab(message.from.nick)
+            print_chat_message(message.from.nick, message.text, message.from.nick)
           end
         else
           if message.channel_name

@@ -13,6 +13,7 @@ module Smirch
           @chat_box.background = options[:background]
           @chat_box.foreground = options[:foreground]
           @chat_box.font = options[:font]
+          @character_count = 0
           @tab_item.control = @chat_box
         end
 
@@ -23,9 +24,22 @@ module Smirch
           @tab_item = nil
         end
 
-        def append_to_chat_box(str)
+        def append(str, newline = true)
+          str = newline ? str + "\n" : str
           @chat_box.append(str)
           @chat_box.top_index = @chat_box.line_count - 1
+          @character_count += str.length
+        end
+
+        def append_chat_message(nick, msg, opts = {})
+          str = "<#{nick}> #{msg}\n"
+          append(str, false)
+
+          if opts[:nick_foreground] && opts[:nick_background]
+            # This is thread-safe, since it runs inside of an asyncExec call
+            range = Custom::StyleRange.new(@character_count - str.length + 1, nick.length, opts[:nick_foreground], opts[:nick_background])
+            @chat_box.style_range = range   # setStyleRange is kind of misnamed, since it adds a style
+          end
         end
       end
     end
