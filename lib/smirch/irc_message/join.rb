@@ -11,7 +11,7 @@ module Smirch
 
       private
         def setup(command, middle, trailing)
-          @channel_name = trailing
+          @channel_name = trailing || middle[0]
         end
     end
   end

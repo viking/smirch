@@ -88,36 +88,19 @@ module Smirch
       end
 
       def setup_input
-        @input_box = Widgets::Text.new(@shell, SWT::BORDER)
-        grid_data = Layout::GridData.new(Layout::GridData::FILL, Layout::GridData::FILL, true, false)
-        grid_data.heightHint = 25
-        @input_box.layout_data = grid_data
-        @input_box.add_key_listener(Events::KeyListener.impl { |name, event|
-          if name == :keyPressed
-            case event.character
-            when SWT::CR
-              input_received
-            end
-          end
-        })
-        @input_box.add_traverse_listener do |event|
-          if event.detail == SWT::TRAVERSE_TAB_NEXT
-            tab_complete
-            event.doit = false
-          end
-        end
-        @input_box.font = @font_15
-        @input_box.set_focus
+        @input = Input.new(@shell, @font_15)
+        @input.on_enter { input_received }
+        @input.on_tab { tab_complete }
       end
 
       def input_received
-        input = @input_box.text
-        @input_box.text = ""
-        puts "#{current_tab.name}: #{input}"
-        if input[0] == ?/
-          @app.execute(input)
+        str = @input.text
+        @input.text = ""
+        puts "#{current_tab.name}: #{str}"
+        if str[0] == ?/
+          @app.execute(str)
         elsif current_tab.name != "Server"
-          @app.execute("/msg #{current_tab.name} #{input}")
+          @app.execute("/msg #{current_tab.name} #{str}")
         end
       end
 
@@ -125,12 +108,12 @@ module Smirch
         return if current_tab.name == "Server"
 
         channel = @app.channels[current_tab.name]
-        md = @input_box.text.match(/\S+$/)
+        md = @input.text.match(/\S+$/)
         if md
           nick = channel.nicks.detect { |n| n =~ /^#{md[0]}/ }
           if nick
             str = nick[md[0].length..-1] + (md.begin(0) == 0 ? ": " : " ")
-            @input_box.append(str)
+            @input.append(str)
           end
         end
       end
@@ -231,4 +214,5 @@ end
 
 path = Pathname.new(File.dirname(__FILE__)) + 'swt'
 require path + 'tab'
+require path + 'input'
 require path + 'settings_dialog'

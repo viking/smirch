@@ -466,6 +466,13 @@ class UnitTests::TestIrcMessage < Test::Unit::TestCase
     assert_equal "#vim", result.channel_name
   end
 
+  def test_JOIN_without_colon
+    message = %{:crookshanks!~shanky@pants.com JOIN #hugetown}
+    result = Smirch::IrcMessage.parse(message)
+    assert_instance_of Smirch::IrcMessage::Join, result
+    assert_equal "#hugetown", result.channel_name
+  end
+
   def test_PART
     message = %{:viking!~viking@example.com PART #hugetown}
     result = Smirch::IrcMessage.parse(message)

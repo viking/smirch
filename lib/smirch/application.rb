@@ -67,8 +67,15 @@ module Smirch
           @channels.clear
           @gui.update(:client_connected)
           @client.start_polling
+
+          mutex = Mutex.new
           @check_message_thread = Thread.new do
-            while check_client_for_messages do
+            loop do
+              if mutex.try_lock
+                result = check_client_for_messages
+                break if !result
+                mutex.unlock
+              end
               sleep 0.5
             end
             @client = nil
